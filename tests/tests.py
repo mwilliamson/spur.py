@@ -1,8 +1,9 @@
 import functools
+import os
 
 from nose.tools import istest, assert_equal
 
-from spur import LocalShell
+import spur
 
 def test(func):
     @functools.wraps(func)
@@ -12,8 +13,17 @@ def test(func):
             
     def _create_shells():
         return [
-            LocalShell()
+            spur.LocalShell(),
+            _create_ssh_shell()
         ]
+        
+    def _create_ssh_shell():
+        return spur.SshShell(
+            hostname=os.environ.get("TEST_SSH_HOSTNAME", "127.0.0.1"),
+            username=os.environ["TEST_SSH_USERNAME"],
+            password=os.environ["TEST_SSH_PASSWORD"],
+            port=int(os.environ.get("TEST_SSH_PORT"))
+        )
         
     return istest(run_test)
 

@@ -39,7 +39,9 @@ class SshShell(object):
             print command_in_cwd
             print "time taken:", (end - start)
             if return_code == 0:
-                return ExecutionResult("".join(output[:-1]))
+                # Strip the extra newline and line containing the return code
+                output_as_str = "".join(output[:-1])[:-1]
+                return ExecutionResult(output_as_str)
             else:
                 print "ERR:", "".join(stderr_output)
                 print "OUT:", "".join(output[:-1])
@@ -72,7 +74,7 @@ class SshShell(object):
         if new_process_group:
             command = "setsid {0}".format(command)
         
-        return r"cd {0}; {1} {2}; echo -e \\n$?".format(cwd, update_env_commands, command)
+        return "cd {0}; {1} {2}; echo '\n'$?".format(cwd, update_env_commands, command)
         
     
     def upload_dir(self, local_dir, remote_dir, ignore):

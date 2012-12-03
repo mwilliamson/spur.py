@@ -62,12 +62,17 @@ spur.SshShell(
 
 ### run(command, cwd, update_env)
 
-Run a command and wait for it to complete.
+Run a command and wait for it to complete. The command is expected to be a list
+of strings.
 
 ```python
 result = shell.run(["echo", "-n", "hello"])
 print result.output # prints hello
 ```
+
+Note that arguments are passed without any shell expansion. For instance,
+`shell.run(["echo", "$PATH"])` will print the literal string `$PATH` rather
+than the value of the environment variable `$PATH`.
 
 Optional arguments:
 

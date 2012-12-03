@@ -21,7 +21,6 @@ class SshShell(object):
         self._client = None
 
     def run(self, *args, **kwargs):
-        start = time.time()
         command_in_cwd = self._generate_run_command(*args, **kwargs)
         
         with self._connect_ssh() as client:
@@ -36,16 +35,11 @@ class SshShell(object):
                 
             return_code = int(output[-1])
             end = time.time()
-            print command_in_cwd
-            print "time taken:", (end - start)
             if return_code == 0:
                 # Strip the extra newline and line containing the return code
                 output_as_str = "".join(output[:-1])[:-1]
                 return ExecutionResult(output_as_str)
             else:
-                print "ERR:", "".join(stderr_output)
-                print "OUT:", "".join(output[:-1])
-                print "RETURN: ", return_code
                 raise subprocess.CalledProcessError(return_code, command_in_cwd)
     
     def spawn(self, *args, **kwargs):

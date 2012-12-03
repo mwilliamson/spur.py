@@ -12,12 +12,12 @@ from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
 
 class SshShell(object):
-    def __init__(self, hostname, username, password=None, port=22, private_key=None):
+    def __init__(self, hostname, username, password=None, port=22, private_key_file=None):
         self._hostname = hostname
         self._port = port
         self._username = username
         self._password = password
-        self._private_key = private_key
+        self._private_key_file = private_key_file
         self._client = None
 
     def run(self, *args, **kwargs):
@@ -111,7 +111,7 @@ class SshShell(object):
                 port=self._port,
                 username=self._username,
                 password=self._password,
-                key_filename=self._private_key
+                key_filename=self._private_key_file
             )
             self._client = client
         yield self._client

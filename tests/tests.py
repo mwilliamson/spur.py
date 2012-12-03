@@ -31,6 +31,11 @@ def test(func):
 def output_of_run_is_stored(shell):
     result = shell.run(["echo", "hello"])
     assert_equal("hello\n", result.output)
+    
+@test
+def output_is_not_truncated_when_not_ending_in_a_newline(shell):
+    result = shell.run(["echo", "-n", "hello"])
+    assert_equal("hello", result.output)
 
 @test
 def cwd_of_run_can_be_set(shell):

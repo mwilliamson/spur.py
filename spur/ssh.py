@@ -35,16 +35,15 @@ class SshShell(object):
                 stderr_output.append(line)
                 
             return_code = int(output[-1])
-            end = time.time()
+            # Strip the extra newline and line containing the return code
+            output_as_str = "".join(output[:-1])[:-1]
             if return_code == 0:
-                # Strip the extra newline and line containing the return code
-                output_as_str = "".join(output[:-1])[:-1]
                 return ExecutionResult(output_as_str)
             else:
                 raise spur.results.RunProcessError(
                     return_code=return_code,
-                    stdout=stdout,
-                    stderr=stderr
+                    stdout=output_as_str,
+                    stderr=stderr_output
                 )
     
     def spawn(self, *args, **kwargs):

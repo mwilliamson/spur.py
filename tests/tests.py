@@ -1,7 +1,7 @@
 import functools
 import os
 
-from nose.tools import istest, assert_equal, assert_raises
+from nose.tools import istest, assert_equal, assert_raises, assert_true
 
 import spur
 
@@ -62,4 +62,11 @@ def environment_variables_can_be_added_for_run(shell):
 @test
 def exception_is_raised_if_return_code_is_not_zero(shell):
     assert_raises(spur.RunProcessError, lambda: shell.run(["false"]))
-    
+
+@test
+def exception_has_output_from_command(shell):
+    try:
+        shell.run(["sh", "-c", "echo Hello world!; false"])
+        assert_true(False)
+    except spur.RunProcessError as error:
+        assert_equal("Hello world!\n", error.stdout)

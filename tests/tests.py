@@ -18,11 +18,13 @@ def test(func):
         ]
         
     def _create_ssh_shell():
+        port_var = os.environ.get("TEST_SSH_PORT")
+        port = int(port_var) if port_var is not None else None
         return spur.SshShell(
             hostname=os.environ.get("TEST_SSH_HOSTNAME", "127.0.0.1"),
             username=os.environ["TEST_SSH_USERNAME"],
             password=os.environ["TEST_SSH_PASSWORD"],
-            port=int(os.environ.get("TEST_SSH_PORT"))
+            port=port
         )
         
     return istest(run_test)
@@ -46,6 +48,11 @@ def trailing_newlines_are_not_stripped_from_run_output(shell):
 def cwd_of_run_can_be_set(shell):
     result = shell.run(["pwd"], cwd="/")
     assert_equal("/\n", result.output)
+
+@test
+def environment_variables_can_be_added_for_run(shell):
+    result = shell.run(["sh", "-c", "echo $NAME"], update_env={"NAME": "Bob"})
+    assert_equal("Bob\n", result.output)
 
 @test
 def environment_variables_can_be_added_for_run(shell):

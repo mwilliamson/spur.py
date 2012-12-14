@@ -44,7 +44,8 @@ class LocalShell(object):
         kwargs = {
             "args": command,
             "cwd": cwd,
-            "stdout": subprocess.PIPE
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE
         }
         if update_env is not None:
             new_env = os.environ.copy()

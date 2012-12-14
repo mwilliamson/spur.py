@@ -78,3 +78,14 @@ def exception_has_stderr_output_from_command(shell):
         assert_true(False)
     except spur.RunProcessError as error:
         assert_equal("Hello world!\n", error.stderr_output)
+
+@test
+def exception_message_contains_return_code_and_all_output(shell):
+    try:
+        shell.run(["sh", "-c", "echo starting; echo failed! 1>&2; exit 1"])
+        assert_true(False)
+    except spur.RunProcessError as error:
+        assert_equal(
+            "return code: 1\noutput: starting\n\nstderr output: failed!\n",
+            error.message
+        )

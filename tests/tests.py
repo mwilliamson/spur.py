@@ -69,4 +69,4 @@ def exception_has_output_from_command(shell):
         shell.run(["sh", "-c", "echo Hello world!; false"])
         assert_true(False)
     except spur.RunProcessError as error:
-        assert_equal("Hello world!\n", error.stdout)
+        assert_equal("Hello world!\n", error.output)

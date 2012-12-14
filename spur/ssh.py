@@ -42,8 +42,8 @@ class SshShell(object):
             else:
                 raise spur.results.RunProcessError(
                     return_code=return_code,
-                    stdout=output_as_str,
-                    stderr=stderr_output
+                    output=output_as_str,
+                    stderr_output=stderr_output
                 )
     
     def spawn(self, *args, **kwargs):

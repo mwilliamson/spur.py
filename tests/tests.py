@@ -1,7 +1,7 @@
 import functools
 import os
 
-from nose.tools import istest, assert_equal
+from nose.tools import istest, assert_equal, assert_raises
 
 import spur
 
@@ -58,3 +58,8 @@ def environment_variables_can_be_added_for_run(shell):
 def environment_variables_can_be_added_for_run(shell):
     result = shell.run(["sh", "-c", "echo $NAME"], update_env={"NAME": "Bob"})
     assert_equal("Bob\n", result.output)
+
+@test
+def exception_is_raised_if_return_code_is_not_zero(shell):
+    assert_raises(spur.RunProcessError, lambda: shell.run(["false"]))
+    

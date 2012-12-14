@@ -10,6 +10,7 @@ import paramiko
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
+import spur.results
 
 class SshShell(object):
     def __init__(self, hostname, username, password=None, port=22, private_key_file=None):
@@ -40,7 +41,11 @@ class SshShell(object):
                 output_as_str = "".join(output[:-1])[:-1]
                 return ExecutionResult(output_as_str)
             else:
-                raise subprocess.CalledProcessError(return_code, command_in_cwd)
+                raise spur.results.RunProcessError(
+                    return_code=return_code,
+                    stdout=stdout,
+                    stderr=stderr
+                )
     
     def spawn(self, *args, **kwargs):
         command_in_cwd = self._generate_run_command(*args, **kwargs)

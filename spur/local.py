@@ -4,6 +4,7 @@ import shutil
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
+import spur.results
     
 class LocalShell(object):
     def upload_dir(self, source, dest, ignore=None):
@@ -23,8 +24,14 @@ class LocalShell(object):
         subprocess.Popen(**self._subprocess_args(*args, **kwargs))
         
     def run(self, *args, **kwargs):
-        output = subprocess.check_output(**self._subprocess_args(*args, **kwargs))
-        return ExecutionResult(output)
+        process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
+        stdout, stderr = process.communicate()
+        return_code = process.poll()
+        if return_code == 0:
+            return ExecutionResult(stdout)
+        else:
+            raise spur.results.RunProcessError(return_code, stdout, stderr)
+        
         
     def temporary_dir(self):
         return create_temporary_dir()
@@ -34,7 +41,11 @@ class LocalShell(object):
         return FileOperations(self)
     
     def _subprocess_args(self, command, cwd=None, update_env=None, new_process_group=False):
-        kwargs = {"args": command, "cwd": cwd}
+        kwargs = {
+            "args": command,
+            "cwd": cwd,
+            "stdout": subprocess.PIPE
+        }
         if update_env is not None:
             new_env = os.environ.copy()
             new_env.update(update_env)

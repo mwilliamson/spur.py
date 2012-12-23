@@ -48,9 +48,16 @@ class SshShell(object):
     
     def spawn(self, *args, **kwargs):
         command_in_cwd = self._generate_run_command(*args, **kwargs)
-        print "RUN: ", command_in_cwd
+        # TODO: _connect_ssh doesn't close client (otherwise this 
+        # function wouldn't work at all), so shouldn't be a context
+        # manager
         with self._connect_ssh() as client:
-            client.exec_command(command_in_cwd)
+            channel = client.get_transport().open_session()
+            channel.exec_command(command_in_cwd)
+            stdin = channel.makefile('wb')
+            stdout = channel.makefile('rb')
+            stderr = channel.makefile_stderr('rb')
+            return SshProcess(channel)
     
     @contextlib.contextmanager
     def temporary_dir(self):
@@ -152,3 +159,22 @@ class SftpFile(object):
 
 def escape_sh(value):
     return "'" + value.replace("'", "'\\''") + "'"
+
+
+class SshProcess(object):
+    def __init__(self, channel):
+        self._channel = channel
+        
+    def is_running(self):
+        return not self._channel.exit_status_ready()
+        
+    def stdin(self):
+        return SshStdin(self._channel)
+
+
+class SshStdin(object):
+    def __init__(self, channel):
+        self._channel = channel
+        
+    def write(self, value):
+        self._channel.sendall(value)

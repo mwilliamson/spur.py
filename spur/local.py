@@ -21,7 +21,8 @@ class LocalShell(object):
         open(remote_path, "w").write(contents)
 
     def spawn(self, *args, **kwargs):
-        subprocess.Popen(**self._subprocess_args(*args, **kwargs))
+        process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
+        return LocalProcess(process)
         
     def run(self, *args, **kwargs):
         allow_error = kwargs.pop("allow_error", False)
@@ -47,7 +48,8 @@ class LocalShell(object):
             "args": command,
             "cwd": cwd,
             "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE
+            "stderr": subprocess.PIPE,
+            "stdin": subprocess.PIPE
         }
         if update_env is not None:
             new_env = os.environ.copy()
@@ -56,3 +58,13 @@ class LocalShell(object):
         if new_process_group:
             kwargs["preexec_fn"] = os.setpgrp
         return kwargs
+
+class LocalProcess(object):
+    def __init__(self, subprocess):
+        self._subprocess = subprocess
+        
+    def is_running(self):
+        return self._subprocess.poll() is None
+        
+    def stdin(self):
+        return self._subprocess.stdin

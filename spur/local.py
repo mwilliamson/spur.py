@@ -66,5 +66,5 @@ class LocalProcess(object):
     def is_running(self):
         return self._subprocess.poll() is None
         
-    def stdin(self):
-        return self._subprocess.stdin
+    def stdin_write(self, value):
+        self._subprocess.stdin.write(value)

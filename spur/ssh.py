@@ -168,13 +168,5 @@ class SshProcess(object):
     def is_running(self):
         return not self._channel.exit_status_ready()
         
-    def stdin(self):
-        return SshStdin(self._channel)
-
-
-class SshStdin(object):
-    def __init__(self, channel):
-        self._channel = channel
-        
-    def write(self, value):
+    def stdin_write(self, value):
         self._channel.sendall(value)

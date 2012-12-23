@@ -107,6 +107,13 @@ def can_get_result_of_spawned_process(shell):
     assert_equal("hello\n", result.output)
 
 @test
+def can_write_to_stdin_of_spawned_processes(shell):
+    process = shell.spawn(["sh", "-c", "read value; echo $value"])
+    process.stdin_write("hello\n")
+    result = process.wait_for_result()
+    assert_equal("hello\n", result.output)
+
+@test
 def can_tell_if_spawned_process_is_running(shell):
     process = shell.spawn(["sh", "-c", "echo after; read dont_care; echo after"])
     assert_equal(True, process.is_running())
@@ -115,3 +122,5 @@ def can_tell_if_spawned_process_is_running(shell):
     import time
     time.sleep(1)
     assert_equal(False, process.is_running())
+
+# TODO: timeouts in wait_for_result

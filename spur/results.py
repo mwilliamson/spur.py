@@ -1,3 +1,14 @@
+def result(return_code, output, stderr_output):
+    if return_code == 0:
+        return ExecutionResult(output, stderr_output)
+    else:
+        raise RunProcessError(
+            return_code,
+            output,
+            stderr_output
+        )
+
+
 class RunProcessError(RuntimeError):
     def __init__(self, return_code, output, stderr_output):
         message = "return code: {0}\noutput: {1}\nstderr output: {2}".format(

@@ -38,17 +38,11 @@ class SshShell(object):
             # Strip the extra newline and line containing the return code
             output_as_str = "".join(output[:-1])[:-1]
             stderr_output_as_str = "".join(stderr_output)
-            if return_code == 0:
-                return spur.results.ExecutionResult(
-                    output_as_str,
-                    stderr_output_as_str
-                )
-            else:
-                raise spur.results.RunProcessError(
-                    return_code=return_code,
-                    output=output_as_str,
-                    stderr_output=stderr_output_as_str
-                )
+            return spur.results.result(
+                return_code,
+                output_as_str,
+                stderr_output_as_str
+            )
     
     def spawn(self, *args, **kwargs):
         command_in_cwd = self._generate_run_command(*args, **kwargs)

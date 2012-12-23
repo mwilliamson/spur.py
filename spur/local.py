@@ -27,11 +27,7 @@ class LocalShell(object):
         process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
         stdout, stderr = process.communicate()
         return_code = process.poll()
-        if return_code == 0:
-            return spur.results.ExecutionResult(stdout, stderr)
-        else:
-            raise spur.results.RunProcessError(return_code, stdout, stderr)
-        
+        return spur.results.result(return_code, stdout, stderr)
         
     def temporary_dir(self):
         return create_temporary_dir()

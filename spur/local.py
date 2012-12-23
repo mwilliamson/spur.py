@@ -26,13 +26,9 @@ class LocalShell(object):
         
     def run(self, *args, **kwargs):
         allow_error = kwargs.pop("allow_error", False)
-        process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
-        stdout, stderr = process.communicate()
-        return_code = process.poll()
+        process = self.spawn(*args, **kwargs)
         return spur.results.result(
-            return_code,
-            stdout,
-            stderr,
+            process,
             allow_error=allow_error
         )
         
@@ -68,3 +64,12 @@ class LocalProcess(object):
         
     def stdin_write(self, value):
         self._subprocess.stdin.write(value)
+        
+    def wait_for_result(self):
+        stdout, stderr = self._subprocess.communicate()
+        return_code = self._subprocess.poll()
+        return spur.results.ExecutionResult(
+            return_code,
+            stdout,
+            stderr
+        )

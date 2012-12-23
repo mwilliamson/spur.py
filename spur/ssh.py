@@ -23,28 +23,11 @@ class SshShell(object):
 
     def run(self, *args, **kwargs):
         allow_error = kwargs.pop("allow_error", False)
-        command_in_cwd = self._generate_run_command(*args, **kwargs)
-        
-        with self._connect_ssh() as client:
-            stdin, stdout, stderr = client.exec_command(command_in_cwd)
-            output = []
-            for line in stdout:
-                output.append(line)
-            
-            stderr_output = []
-            for line in stderr:
-                stderr_output.append(line)
-                
-            return_code = int(output[-1])
-            # Strip the extra newline and line containing the return code
-            output_as_str = "".join(output[:-1])[:-1]
-            stderr_output_as_str = "".join(stderr_output)
-            return spur.results.result(
-                return_code,
-                output_as_str,
-                stderr_output_as_str,
-                allow_error=allow_error
-            )
+        process = self.spawn(*args, **kwargs)
+        return spur.results.result(
+            process,
+            allow_error=allow_error
+        )
     
     def spawn(self, *args, **kwargs):
         command_in_cwd = self._generate_run_command(*args, **kwargs)
@@ -54,9 +37,6 @@ class SshShell(object):
         with self._connect_ssh() as client:
             channel = client.get_transport().open_session()
             channel.exec_command(command_in_cwd)
-            stdin = channel.makefile('wb')
-            stdout = channel.makefile('rb')
-            stderr = channel.makefile_stderr('rb')
             return SshProcess(channel)
     
     @contextlib.contextmanager
@@ -164,9 +144,31 @@ def escape_sh(value):
 class SshProcess(object):
     def __init__(self, channel):
         self._channel = channel
+        self._stdin = channel.makefile('wb')
+        self._stdout = channel.makefile('rb')
+        self._stderr = channel.makefile_stderr('rb')
         
     def is_running(self):
         return not self._channel.exit_status_ready()
         
     def stdin_write(self, value):
         self._channel.sendall(value)
+        
+    def wait_for_result(self):
+        output = []
+        for line in self._stdout:
+            output.append(line)
+        
+        stderr_output = []
+        for line in self._stderr:
+            stderr_output.append(line)
+            
+        return_code = int(output[-1])
+        # Strip the extra newline and line containing the return code
+        output_as_str = "".join(output[:-1])[:-1]
+        stderr_output_as_str = "".join(stderr_output)
+        return spur.results.ExecutionResult(
+            return_code,
+            output_as_str,
+            stderr_output_as_str
+        )

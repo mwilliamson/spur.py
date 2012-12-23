@@ -1,6 +1,6 @@
-def result(return_code, output, stderr_output, allow_error=False):
-    result = ExecutionResult(return_code, output, stderr_output)
-    if allow_error or return_code == 0:
+def result(process, allow_error=False):
+    result = process.wait_for_result()
+    if allow_error or result.return_code == 0:
         return result
     else:
         raise result.to_error()

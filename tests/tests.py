@@ -101,6 +101,12 @@ def return_code_stored_if_errors_allowed(shell):
     assert_equal(14, result.return_code)
 
 @test
+def can_get_result_of_spawned_process(shell):
+    process = shell.spawn(["echo", "hello"])
+    result = process.wait_for_result()
+    assert_equal("hello\n", result.output)
+
+@test
 def can_tell_if_spawned_process_is_running(shell):
     process = shell.spawn(["sh", "-c", "echo after; read dont_care; echo after"])
     assert_equal(True, process.is_running())

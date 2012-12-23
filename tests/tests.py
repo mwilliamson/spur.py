@@ -45,6 +45,11 @@ def trailing_newlines_are_not_stripped_from_run_output(shell):
     assert_equal("\n\n\n", result.output)
 
 @test
+def stderr_output_of_run_is_stored(shell):
+    result = shell.run(["sh", "-c", "echo hello 1>&2"])
+    assert_equal("hello\n", result.stderr_output)
+    
+@test
 def cwd_of_run_can_be_set(shell):
     result = shell.run(["pwd"], cwd="/")
     assert_equal("/\n", result.output)

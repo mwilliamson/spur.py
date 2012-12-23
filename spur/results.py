@@ -9,5 +9,6 @@ class RunProcessError(RuntimeError):
 
 
 class ExecutionResult(object):
-    def __init__(self, output):
+    def __init__(self, output, stderr_output):
         self.output = output
+        self.stderr_output = stderr_output

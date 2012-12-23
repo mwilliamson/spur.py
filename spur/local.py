@@ -28,7 +28,7 @@ class LocalShell(object):
         stdout, stderr = process.communicate()
         return_code = process.poll()
         if return_code == 0:
-            return spur.results.ExecutionResult(stdout)
+            return spur.results.ExecutionResult(stdout, stderr)
         else:
             raise spur.results.RunProcessError(return_code, stdout, stderr)
         

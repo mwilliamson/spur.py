@@ -6,3 +6,8 @@ class RunProcessError(RuntimeError):
         self.return_code = return_code
         self.output = output
         self.stderr_output = stderr_output
+
+
+class ExecutionResult(object):
+    def __init__(self, output):
+        self.output = output

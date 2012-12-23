@@ -38,7 +38,7 @@ class SshShell(object):
             # Strip the extra newline and line containing the return code
             output_as_str = "".join(output[:-1])[:-1]
             if return_code == 0:
-                return ExecutionResult(output_as_str)
+                return spur.results.ExecutionResult(output_as_str)
             else:
                 raise spur.results.RunProcessError(
                     return_code=return_code,
@@ -148,11 +148,6 @@ class SftpFile(object):
             
     def __exit__(self, *args):
         self.close()
-        
-
-class ExecutionResult(object):
-    def __init__(self, output):
-        self.output = output
         
 
 def escape_sh(value):

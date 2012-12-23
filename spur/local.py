@@ -28,7 +28,7 @@ class LocalShell(object):
         stdout, stderr = process.communicate()
         return_code = process.poll()
         if return_code == 0:
-            return ExecutionResult(stdout)
+            return spur.results.ExecutionResult(stdout)
         else:
             raise spur.results.RunProcessError(return_code, stdout, stderr)
         
@@ -54,8 +54,3 @@ class LocalShell(object):
         if new_process_group:
             kwargs["preexec_fn"] = os.setpgrp
         return kwargs
-
-class ExecutionResult(object):
-    def __init__(self, output):
-        self.output = output
-

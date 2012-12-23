@@ -1,8 +1,9 @@
 def result(return_code, output, stderr_output, allow_error=False):
+    result = ExecutionResult(return_code, output, stderr_output)
     if allow_error or return_code == 0:
-        return ExecutionResult(return_code, output, stderr_output)
+        return result
     else:
-        raise RunProcessError(return_code, output, stderr_output)
+        raise result.to_error()
 
 
 class RunProcessError(RuntimeError):
@@ -20,3 +21,10 @@ class ExecutionResult(object):
         self.return_code = return_code
         self.output = output
         self.stderr_output = stderr_output
+        
+    def to_error(self):
+        return RunProcessError(
+            self.return_code,
+            self.output, 
+            self.stderr_output
+        )

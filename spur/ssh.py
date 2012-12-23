@@ -147,6 +147,7 @@ class SshProcess(object):
         self._stdin = channel.makefile('wb')
         self._stdout = channel.makefile('rb')
         self._stderr = channel.makefile_stderr('rb')
+        self._result = None
         
     def is_running(self):
         return not self._channel.exit_status_ready()
@@ -155,6 +156,12 @@ class SshProcess(object):
         self._channel.sendall(value)
         
     def wait_for_result(self):
+        if self._result is None:
+            self._result = self._generate_result()
+            
+        return self._result
+        
+    def _generate_result(self):
         output = []
         for line in self._stdout:
             output.append(line)

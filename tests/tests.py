@@ -105,6 +105,13 @@ def can_get_result_of_spawned_process(shell):
     process = shell.spawn(["echo", "hello"])
     result = process.wait_for_result()
     assert_equal("hello\n", result.output)
+    
+@test
+def calling_wait_for_result_is_idempotent(shell):
+    process = shell.spawn(["echo", "hello"])
+    process.wait_for_result()
+    result = process.wait_for_result()
+    assert_equal("hello\n", result.output)
 
 @test
 def can_write_to_stdin_of_spawned_processes(shell):

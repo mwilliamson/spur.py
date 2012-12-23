@@ -58,6 +58,7 @@ class LocalShell(object):
 class LocalProcess(object):
     def __init__(self, subprocess):
         self._subprocess = subprocess
+        self._result = None
         
     def is_running(self):
         return self._subprocess.poll() is None
@@ -66,6 +67,12 @@ class LocalProcess(object):
         self._subprocess.stdin.write(value)
         
     def wait_for_result(self):
+        if self._result is None:
+            self._result = self._generate_result()
+            
+        return self._result
+        
+    def _generate_result(self):
         stdout, stderr = self._subprocess.communicate()
         return_code = self._subprocess.poll()
         return spur.results.ExecutionResult(

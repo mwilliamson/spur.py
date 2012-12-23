@@ -24,10 +24,16 @@ class LocalShell(object):
         subprocess.Popen(**self._subprocess_args(*args, **kwargs))
         
     def run(self, *args, **kwargs):
+        allow_error = kwargs.pop("allow_error", False)
         process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
         stdout, stderr = process.communicate()
         return_code = process.poll()
-        return spur.results.result(return_code, stdout, stderr)
+        return spur.results.result(
+            return_code,
+            stdout,
+            stderr,
+            allow_error=allow_error
+        )
         
     def temporary_dir(self):
         return create_temporary_dir()

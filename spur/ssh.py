@@ -22,6 +22,7 @@ class SshShell(object):
         self._client = None
 
     def run(self, *args, **kwargs):
+        allow_error = kwargs.pop("allow_error", False)
         command_in_cwd = self._generate_run_command(*args, **kwargs)
         
         with self._connect_ssh() as client:
@@ -41,7 +42,8 @@ class SshShell(object):
             return spur.results.result(
                 return_code,
                 output_as_str,
-                stderr_output_as_str
+                stderr_output_as_str,
+                allow_error=allow_error
             )
     
     def spawn(self, *args, **kwargs):

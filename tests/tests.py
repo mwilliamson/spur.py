@@ -94,3 +94,8 @@ def exception_message_contains_return_code_and_all_output(shell):
             "return code: 1\noutput: starting\n\nstderr output: failed!\n",
             error.message
         )
+
+@test
+def return_code_stored_if_errors_allowed(shell):
+    result = shell.run(["sh", "-c", "exit 14"], allow_error=True)
+    assert_equal(14, result.return_code)

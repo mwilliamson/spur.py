@@ -63,7 +63,7 @@ spur.SshShell(
 ### run(command, cwd, update_env)
 
 Run a command and wait for it to complete. The command is expected to be a list
-of strings.
+of strings. Returns an instance of `ExecutionResult`.
 
 ```python
 result = shell.run(["echo", "-n", "hello"])
@@ -81,3 +81,35 @@ Optional arguments:
 * `update_env` -- a `dict` containing environment variables to be set before
   running the command. If there's an existing environment variable with the same
   name, it will be overwritten. Otherwise, it is unchanged.
+* `allow_error` -- `False` by default. If `False`, an exception is raised if
+  the return code of the command is anything but 0. If `True`, a result is
+  returned irrespective of return code.
+
+## Classes
+
+### ExecutionResult
+
+`ExecutionResult` has the following properties:
+
+* `return_code` -- the return code of the command
+* `output` -- a string containing the result of capturing stdout
+* `stderr_output` -- a string containing the result of capturing stdout
+
+It also has the following methods:
+
+* `to_error()` -- return the corresponding RunProcessError. This is useful if
+  you want to conditionally raise RunProcessError, for instance:
+  
+```python
+result = shell.run(["some-command"], allow_error=True)
+if result.return_code > 4:
+    raise result.to_error()
+```
+
+### RunProcessError
+
+A subclass of `RuntimeError` with the same properties as `ExecutionResult`:
+
+* `return_code` -- the return code of the command
+* `output` -- a string containing the result of capturing stdout
+* `stderr_output` -- a string containing the result of capturing stdout

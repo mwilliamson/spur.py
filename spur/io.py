@@ -21,28 +21,28 @@ class IoHandler(object):
     
 
 class OutputHandler(object):
-    def __init__(self, stdout_in, stdout_out):
-        self._stdout_in = stdout_in
-        self._stdout_out = stdout_out
+    def __init__(self, file_in, file_out):
+        self._file_in = file_in
+        self._file_out = file_out
         self._output = []
         
-        if stdout_out:
-            self._stdout_thread = threading.Thread(target=self._capture_stdout)
-            self._stdout_thread.daemon = True
-            self._stdout_thread.start()
+        if file_out:
+            self._thread = threading.Thread(target=self._capture_output)
+            self._thread.daemon = True
+            self._thread.start()
         else:
-            self._stdout_thread = None
+            self._thread = None
 
     def wait(self):
-        if self._stdout_thread:
-            self._stdout_thread.join()
+        if self._thread:
+            self._thread.join()
         return "".join(self._output)
     
-    def _capture_stdout(self):
+    def _capture_output (self):
         while True:
-            output = self._stdout_in.read(1)
+            output = self._file_in.read(1)
             if output:
-                self._stdout_out.write(output)
+                self._file_out.write(output)
                 self._output.append(output)
             else:
                 return

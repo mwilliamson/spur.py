@@ -182,6 +182,13 @@ def can_read_files_opened_by_open(shell):
         f.close()
         shell.run(["rm", path])
         
+@test
+def open_can_be_used_as_context_manager(shell):
+    path = "/tmp/{0}".format(uuid.uuid4())
+    shell.run(["sh", "-c", "echo hello > '{0}'".format(path)])
+    with shell.open(path) as f:
+        assert_equal("hello\n", f.read())
+        
 
 # TODO: timeouts in wait_for_result
 

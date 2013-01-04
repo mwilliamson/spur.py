@@ -137,7 +137,10 @@ class SftpFile(object):
             self._file.close()
         finally:
             self._sftp.close()
-            
+    
+    def __enter__(self):
+        return self
+    
     def __exit__(self, *args):
         self.close()
         

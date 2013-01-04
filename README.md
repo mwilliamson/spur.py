@@ -97,6 +97,8 @@ representing the running process. Accepts the same arguments as `run` except for
 
 ## Process interface
 
+Returned by calls to `shell.spawn`. Has the following methods:
+
 * `is_running()` -- return `True` if the process is still running, `False`
   otherwise.
 * `stdin_write(value)` -- write `value` to the standard input of the process.

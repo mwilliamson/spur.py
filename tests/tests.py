@@ -127,10 +127,7 @@ def can_tell_if_spawned_process_is_running(shell):
     process = shell.spawn(["sh", "-c", "echo after; read dont_care; echo after"])
     assert_equal(True, process.is_running())
     process.stdin_write("\n")
-    # TODO: Remove sleep
-    import time
-    time.sleep(1)
-    assert_equal(False, process.is_running())
+    _wait_for_assertion(lambda: assert_equal(False, process.is_running()))
     
 #~ @test
 def can_write_stdout_to_file_object_while_process_is_executing(shell):

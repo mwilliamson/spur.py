@@ -5,12 +5,14 @@ import shutil
 import contextlib
 import uuid
 import time
+import re
 
 import paramiko
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
 import spur.results
+from .io import IoHandler
 
 class SshShell(object):
     def __init__(self, hostname, username, password=None, port=22, private_key_file=None):
@@ -30,6 +32,7 @@ class SshShell(object):
         )
     
     def spawn(self, *args, **kwargs):
+        stdout = kwargs.pop("stdout", None)
         command_in_cwd = self._generate_run_command(*args, **kwargs)
         # TODO: _connect_ssh doesn't close client (otherwise this 
         # function wouldn't work at all), so shouldn't be a context
@@ -37,7 +40,7 @@ class SshShell(object):
         with self._connect_ssh() as client:
             channel = client.get_transport().open_session()
             channel.exec_command(command_in_cwd)
-            return SshProcess(channel)
+            return SshProcess(channel, stdout=stdout)
     
     @contextlib.contextmanager
     def temporary_dir(self):
@@ -59,7 +62,7 @@ class SshShell(object):
         if new_process_group:
             command = "setsid {0}".format(command)
         
-        return "cd {0}; {1} {2}; echo '\n'$?".format(cwd, update_env_commands, command)
+        return "cd {0}; {1} {2}".format(cwd, update_env_commands, command)
         
     
     def upload_dir(self, local_dir, remote_dir, ignore):
@@ -142,12 +145,14 @@ def escape_sh(value):
 
 
 class SshProcess(object):
-    def __init__(self, channel):
+    def __init__(self, channel, stdout):
         self._channel = channel
         self._stdin = channel.makefile('wb')
         self._stdout = channel.makefile('rb')
         self._stderr = channel.makefile_stderr('rb')
         self._result = None
+        
+        self._io = IoHandler(self._stdout, stdout)
         
     def is_running(self):
         return not self._channel.exit_status_ready()
@@ -162,20 +167,19 @@ class SshProcess(object):
         return self._result
         
     def _generate_result(self):
-        output = []
-        for line in self._stdout:
-            output.append(line)
+        output = self._io.wait()
+        if not output:
+            output = self._stdout.read()
         
         stderr_output = []
         for line in self._stderr:
             stderr_output.append(line)
-            
-        return_code = int(output[-1])
-        # Strip the extra newline and line containing the return code
-        output_as_str = "".join(output[:-1])[:-1]
+        
+        return_code = self._channel.recv_exit_status()
+        
         stderr_output_as_str = "".join(stderr_output)
         return spur.results.ExecutionResult(
             return_code,
-            output_as_str,
+            output,
             stderr_output_as_str
         )

@@ -129,7 +129,7 @@ def can_tell_if_spawned_process_is_running(shell):
     process.stdin_write("\n")
     _wait_for_assertion(lambda: assert_equal(False, process.is_running()))
     
-#~ @test
+@test
 def can_write_stdout_to_file_object_while_process_is_executing(shell):
     output_file = StringIO.StringIO()
     process = shell.spawn(

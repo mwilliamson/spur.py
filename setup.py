@@ -14,5 +14,5 @@ setup(
     author='Michael Williamson',
     url='http://github.com/mwilliamson/spur.py',
     packages=['spur'],
-    install_requires=["paramiko==1.9.0"],
+    install_requires=["paramiko>=1.9.0,<2"],
 )

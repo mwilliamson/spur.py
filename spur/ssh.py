@@ -156,7 +156,7 @@ class SshProcess(object):
         self._io = IoHandler([
             (self._stdout, stdout),
             (self._stderr, stderr),
-        ])
+        ], lambda: (self._stdout.read(), self._stderr.read()))
         
     def is_running(self):
         return not self._channel.exit_status_ready()
@@ -172,12 +172,6 @@ class SshProcess(object):
         
     def _generate_result(self):
         output, stderr_output = self._io.wait()
-        if not output:
-            output = self._stdout.read()
-        
-        if not stderr_output:
-            stderr_output = self._stderr.read()
-        
         return_code = self._channel.recv_exit_status()
         
         return spur.results.ExecutionResult(

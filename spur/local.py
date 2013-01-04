@@ -67,7 +67,7 @@ class LocalProcess(object):
         self._io = IoHandler([
             (subprocess.stdout, stdout),
             (subprocess.stderr, stderr),
-        ])
+        ], lambda: self._subprocess.communicate())
         
     def is_running(self):
         return self._subprocess.poll() is None
@@ -83,14 +83,8 @@ class LocalProcess(object):
     
     def _generate_result(self):
         output, stderr_output = self._io.wait()
-        
-        communicate_output, communicate_stderr_output = self._subprocess.communicate()
-        if not output:
-            output = communicate_output
-        if not stderr_output:
-            stderr_output = communicate_stderr_output
-        
         return_code = self._subprocess.poll()
+        
         return spur.results.ExecutionResult(
             return_code,
             output,

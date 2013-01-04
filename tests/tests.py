@@ -2,6 +2,7 @@ import functools
 import os
 import StringIO
 import time
+import uuid
 
 from nose.tools import istest, assert_equal, assert_raises, assert_true
 
@@ -158,6 +159,29 @@ def can_write_stderr_to_file_object_while_process_is_executing(shell):
     process.stdin_write("\n")
     assert_equal("hello\n", process.wait_for_result().stderr_output)
     
+@test
+def can_write_to_files_opened_by_open(shell):
+    path = "/tmp/{0}".format(uuid.uuid4())
+    f = shell.open(path, "w")
+    try:
+        f.write("hello")
+        f.flush()
+        assert_equal("hello", shell.run(["cat", path]).output)
+    finally:
+        f.close()
+        shell.run(["rm", path])
+        
+@test
+def can_read_files_opened_by_open(shell):
+    path = "/tmp/{0}".format(uuid.uuid4())
+    shell.run(["sh", "-c", "echo hello > '{0}'".format(path)])
+    f = shell.open(path)
+    try:
+        assert_equal("hello\n", f.read())
+    finally:
+        f.close()
+        shell.run(["rm", path])
+        
 
 # TODO: timeouts in wait_for_result
 

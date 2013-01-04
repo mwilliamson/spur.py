@@ -87,7 +87,7 @@ class SshShell(object):
                     
                 sftp.remove(remote_tarball_path)
                 
-    def open(self, name, mode):
+    def open(self, name, mode="r"):
         with self._connect_ssh() as client:
             sftp = client.open_sftp()
             return SftpFile(sftp, sftp.open(name, mode))

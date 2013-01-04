@@ -15,7 +15,7 @@ class LocalShell(object):
     def upload_file(self, source, dest):
         shutil.copyfile(source, dest)
     
-    def open(self, name, mode):
+    def open(self, name, mode="r"):
         return open(name, mode)
     
     def write_file(self, remote_path, contents):

@@ -60,7 +60,7 @@ spur.SshShell(
 
 ## Operations
 
-### run(command, cwd, update_env)
+### run(command, cwd, update_env, allow_error, stdout, stderr)
 
 Run a command and wait for it to complete. The command is expected to be a list
 of strings. Returns an instance of `ExecutionResult`.
@@ -84,6 +84,10 @@ Optional arguments:
 * `allow_error` -- `False` by default. If `False`, an exception is raised if
   the return code of the command is anything but 0. If `True`, a result is
   returned irrespective of return code.
+* `stdout` -- if not `None`, anything the command prints to standard output
+  during its execution will also be written to `stdout` using `stdout.write`.
+* `stderr` -- if not `None`, anything the command prints to standard error
+  during its execution will also be written to `stderr` using `stderr.write`.
 
 ## Classes
 

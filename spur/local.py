@@ -24,8 +24,9 @@ class LocalShell(object):
 
     def spawn(self, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
+        stderr = kwargs.pop("stderr", None)
         process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
-        return LocalProcess(process, stdout=stdout)
+        return LocalProcess(process, stdout=stdout, stderr=stderr)
         
     def run(self, *args, **kwargs):
         allow_error = kwargs.pop("allow_error", False)
@@ -59,11 +60,14 @@ class LocalShell(object):
         return kwargs
 
 class LocalProcess(object):
-    def __init__(self, subprocess, stdout):
+    def __init__(self, subprocess, stdout, stderr):
         self._subprocess = subprocess
         self._result = None
             
-        self._io = IoHandler(subprocess.stdout, stdout)
+        self._io = IoHandler([
+            (subprocess.stdout, stdout),
+            (subprocess.stderr, stderr),
+        ])
         
     def is_running(self):
         return self._subprocess.poll() is None
@@ -78,16 +82,18 @@ class LocalProcess(object):
         return self._result
     
     def _generate_result(self):
-        output = self._io.wait()
+        output, stderr_output = self._io.wait()
         
-        communicate_output, stderr = self._subprocess.communicate()
+        communicate_output, communicate_stderr_output = self._subprocess.communicate()
         if not output:
             output = communicate_output
+        if not stderr_output:
+            stderr_output = communicate_stderr_output
         
         return_code = self._subprocess.poll()
         return spur.results.ExecutionResult(
             return_code,
             output,
-            stderr
+            stderr_output
         )
 

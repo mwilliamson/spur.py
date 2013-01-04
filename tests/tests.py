@@ -141,6 +141,18 @@ def can_write_stdout_to_file_object_while_process_is_executing(shell):
     process.stdin_write("\n")
     assert_equal("hello\n", process.wait_for_result().output)
     
+@test
+def can_write_stderr_to_file_object_while_process_is_executing(shell):
+    output_file = StringIO.StringIO()
+    process = shell.spawn(
+        ["sh", "-c", "echo hello 1>&2; read dont_care;"],
+        stderr=output_file
+    )
+    _wait_for_assertion(lambda: assert_equal("hello\n", output_file.getvalue()))
+    assert process.is_running()
+    process.stdin_write("\n")
+    assert_equal("hello\n", process.wait_for_result().stderr_output)
+    
 
 # TODO: timeouts in wait_for_result
 

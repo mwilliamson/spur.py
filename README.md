@@ -89,6 +89,9 @@ Optional arguments:
 * `stderr` -- if not `None`, anything the command prints to standard error
   during its execution will also be written to `stderr` using `stderr.write`.
 
+`shell.run(*args, **kwargs)` should behave similarly to
+`shell.spawn(*args, **kwargs).wait_for_result()`
+
 ### spawn(command, cwd, update_env, allow_error, stdout, stderr)
 
 Behaves the same as `run` except that `spawn` immediately returns an object

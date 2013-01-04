@@ -58,7 +58,7 @@ spur.SshShell(
 )
 ```
 
-## Operations
+## Shell interface
 
 ### run(command, cwd, update_env, allow_error, stdout, stderr)
 
@@ -77,7 +77,7 @@ than the value of the environment variable `$PATH`.
 Optional arguments:
 
 * `cwd` -- change the current directory to this value before executing the
-  command
+  command.
 * `update_env` -- a `dict` containing environment variables to be set before
   running the command. If there's an existing environment variable with the same
   name, it will be overwritten. Otherwise, it is unchanged.
@@ -88,6 +88,20 @@ Optional arguments:
   during its execution will also be written to `stdout` using `stdout.write`.
 * `stderr` -- if not `None`, anything the command prints to standard error
   during its execution will also be written to `stderr` using `stderr.write`.
+
+### spawn(command, cwd, update_env, stdout, stderr)
+
+Behaves the same as `run` except that `spawn` immediately returns an object
+representing the running process. Accepts the same arguments as `run` except for
+`allow_error`.
+
+## Process interface
+
+* `is_running()` -- return `True` if the process is still running, `False`
+  otherwise.
+* `stdin_write(value)` -- write `value` to the standard input of the process.
+* `wait_for_result()` -- wait for the process to exit, and then return an
+  instance of `ExecutionResult`.
 
 ## Classes
 

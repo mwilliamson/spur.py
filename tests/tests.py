@@ -114,6 +114,11 @@ def calling_wait_for_result_is_idempotent(shell):
     process.wait_for_result()
     result = process.wait_for_result()
     assert_equal("hello\n", result.output)
+    
+@test
+def wait_for_result_raises_error_if_return_code_is_not_zero(shell):
+    process = shell.spawn(["false"])
+    assert_raises(spur.RunProcessError, process.wait_for_result)
 
 @test
 def can_write_to_stdin_of_spawned_processes(shell):

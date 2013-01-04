@@ -24,16 +24,12 @@ class SshShell(object):
         self._client = None
 
     def run(self, *args, **kwargs):
-        allow_error = kwargs.pop("allow_error", False)
-        process = self.spawn(*args, **kwargs)
-        return spur.results.result(
-            process,
-            allow_error=allow_error
-        )
+        return self.spawn(*args, **kwargs).wait_for_result()
     
     def spawn(self, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
+        allow_error = kwargs.pop("allow_error", False)
         command_in_cwd = self._generate_run_command(*args, **kwargs)
         # TODO: _connect_ssh doesn't close client (otherwise this 
         # function wouldn't work at all), so shouldn't be a context
@@ -41,7 +37,12 @@ class SshShell(object):
         with self._connect_ssh() as client:
             channel = client.get_transport().open_session()
             channel.exec_command(command_in_cwd)
-            return SshProcess(channel, stdout=stdout, stderr=stderr)
+            return SshProcess(
+                channel,
+                allow_error=allow_error,
+                stdout=stdout,
+                stderr=stderr
+            )
     
     @contextlib.contextmanager
     def temporary_dir(self):
@@ -146,8 +147,9 @@ def escape_sh(value):
 
 
 class SshProcess(object):
-    def __init__(self, channel, stdout, stderr):
+    def __init__(self, channel, allow_error, stdout, stderr):
         self._channel = channel
+        self._allow_error = allow_error
         self._stdin = channel.makefile('wb')
         self._stdout = channel.makefile('rb')
         self._stderr = channel.makefile_stderr('rb')
@@ -174,8 +176,9 @@ class SshProcess(object):
         output, stderr_output = self._io.wait()
         return_code = self._channel.recv_exit_status()
         
-        return spur.results.ExecutionResult(
+        return spur.results.result(
             return_code,
+            self._allow_error,
             output,
             stderr_output
         )

@@ -89,11 +89,10 @@ Optional arguments:
 * `stderr` -- if not `None`, anything the command prints to standard error
   during its execution will also be written to `stderr` using `stderr.write`.
 
-### spawn(command, cwd, update_env, stdout, stderr)
+### spawn(command, cwd, update_env, allow_error, stdout, stderr)
 
 Behaves the same as `run` except that `spawn` immediately returns an object
-representing the running process. Accepts the same arguments as `run` except for
-`allow_error`.
+representing the running process.
 
 ## Process interface
 
@@ -103,7 +102,8 @@ Returned by calls to `shell.spawn`. Has the following methods:
   otherwise.
 * `stdin_write(value)` -- write `value` to the standard input of the process.
 * `wait_for_result()` -- wait for the process to exit, and then return an
-  instance of `ExecutionResult`.
+  instance of `ExecutionResult`. Will raise `RunProcessError` if the return
+  code is not zero and `shell.spawn` was not called with `allow_error=True`.
 
 ## Classes
 

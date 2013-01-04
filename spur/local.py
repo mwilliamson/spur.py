@@ -25,16 +25,17 @@ class LocalShell(object):
     def spawn(self, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
+        allow_error = kwargs.pop("allow_error", False)
         process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
-        return LocalProcess(process, stdout=stdout, stderr=stderr)
+        return LocalProcess(
+            process,
+            allow_error=allow_error,
+            stdout=stdout,
+            stderr=stderr
+        )
         
     def run(self, *args, **kwargs):
-        allow_error = kwargs.pop("allow_error", False)
-        process = self.spawn(*args, **kwargs)
-        return spur.results.result(
-            process,
-            allow_error=allow_error
-        )
+        return self.spawn(*args, **kwargs).wait_for_result()
         
     def temporary_dir(self):
         return create_temporary_dir()
@@ -60,8 +61,9 @@ class LocalShell(object):
         return kwargs
 
 class LocalProcess(object):
-    def __init__(self, subprocess, stdout, stderr):
+    def __init__(self, subprocess, allow_error, stdout, stderr):
         self._subprocess = subprocess
+        self._allow_error = allow_error
         self._result = None
             
         self._io = IoHandler([
@@ -85,8 +87,9 @@ class LocalProcess(object):
         output, stderr_output = self._io.wait()
         return_code = self._subprocess.poll()
         
-        return spur.results.ExecutionResult(
+        return spur.results.result(
             return_code,
+            self._allow_error,
             output,
             stderr_output
         )

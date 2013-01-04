@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shutil
+import threading
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
@@ -21,8 +22,9 @@ class LocalShell(object):
         open(remote_path, "w").write(contents)
 
     def spawn(self, *args, **kwargs):
+        stdout = kwargs.pop("stdout", None)
         process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
-        return LocalProcess(process)
+        return LocalProcess(process, stdout=stdout)
         
     def run(self, *args, **kwargs):
         allow_error = kwargs.pop("allow_error", False)
@@ -56,9 +58,18 @@ class LocalShell(object):
         return kwargs
 
 class LocalProcess(object):
-    def __init__(self, subprocess):
+    def __init__(self, subprocess, stdout):
         self._subprocess = subprocess
+        self._stdout = stdout
         self._result = None
+        self._output = []
+        
+        if stdout:
+            self._stdout_thread = threading.Thread(target=self._capture_stdout)
+            self._stdout_thread.daemon = True
+            self._stdout_thread.start()
+        else:
+            self._stdout_thread = None
         
     def is_running(self):
         return self._subprocess.poll() is None
@@ -71,12 +82,29 @@ class LocalProcess(object):
             self._result = self._generate_result()
             
         return self._result
-        
+    
+    def _capture_stdout(self):
+        while True:
+            output = self._subprocess.stdout.read(1)
+            if output:
+                self._stdout.write(output)
+                self._output.append(output)
+            else:
+                return
+    
     def _generate_result(self):
-        stdout, stderr = self._subprocess.communicate()
+        if self._stdout_thread:
+            self._stdout_thread.join()
+        
+        communicate_output, stderr = self._subprocess.communicate()
+        if self._output:
+            output = "".join(self._output)
+        else:
+            output = communicate_output
+        
         return_code = self._subprocess.poll()
         return spur.results.ExecutionResult(
             return_code,
-            stdout,
+            output,
             stderr
         )

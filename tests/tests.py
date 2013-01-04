@@ -1,5 +1,7 @@
 import functools
 import os
+import StringIO
+import time
 
 from nose.tools import istest, assert_equal, assert_raises, assert_true
 
@@ -129,5 +131,30 @@ def can_tell_if_spawned_process_is_running(shell):
     import time
     time.sleep(1)
     assert_equal(False, process.is_running())
+    
+#~ @test
+def can_write_stdout_to_file_object_while_process_is_executing(shell):
+    output_file = StringIO.StringIO()
+    process = shell.spawn(
+        ["sh", "-c", "echo hello; read dont_care;"],
+        stdout=output_file
+    )
+    _wait_for_assertion(lambda: assert_equal("hello\n", output_file.getvalue()))
+    assert process.is_running()
+    process.stdin_write("\n")
+    assert_equal("hello\n", process.wait_for_result().output)
+    
 
 # TODO: timeouts in wait_for_result
+
+def _wait_for_assertion(assertion):
+    timeout = 1
+    pause = 0.01
+    start = time.time()
+    while True:
+        try:
+            assertion()
+            return
+        except AssertionError:
+            if time.time() - start > timeout:
+                raise

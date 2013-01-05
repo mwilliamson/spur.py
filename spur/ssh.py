@@ -31,18 +31,15 @@ class SshShell(object):
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
         command_in_cwd = self._generate_run_command(*args, **kwargs)
-        # TODO: _connect_ssh doesn't close client (otherwise this 
-        # function wouldn't work at all), so shouldn't be a context
-        # manager
-        with self._connect_ssh() as client:
-            channel = client.get_transport().open_session()
-            channel.exec_command(command_in_cwd)
-            return SshProcess(
-                channel,
-                allow_error=allow_error,
-                stdout=stdout,
-                stderr=stderr
-            )
+        client = self._connect_ssh()
+        channel = client.get_transport().open_session()
+        channel.exec_command(command_in_cwd)
+        return SshProcess(
+            channel,
+            allow_error=allow_error,
+            stdout=stdout,
+            stderr=stderr
+        )
     
     @contextlib.contextmanager
     def temporary_dir(self):
@@ -88,15 +85,14 @@ class SshShell(object):
                 sftp.remove(remote_tarball_path)
                 
     def open(self, name, mode="r"):
-        with self._connect_ssh() as client:
-            sftp = client.open_sftp()
-            return SftpFile(sftp, sftp.open(name, mode))
+        client = self._connect_ssh()
+        sftp = client.open_sftp()
+        return SftpFile(sftp, sftp.open(name, mode))
                 
     @property
     def files(self):
         return FileOperations(self)
     
-    @contextlib.contextmanager
     def _connect_ssh(self):
         if self._client is None:
             client = paramiko.SSHClient()
@@ -110,16 +106,16 @@ class SshShell(object):
                 key_filename=self._private_key_file
             )
             self._client = client
-        yield self._client
+        return self._client
     
     @contextlib.contextmanager
     def _connect_sftp(self):
-        with self._connect_ssh() as client:
-            sftp = client.open_sftp()
-            try:
-                yield sftp
-            finally:
-                sftp.close()
+        client = self._connect_ssh()
+        sftp = client.open_sftp()
+        try:
+            yield sftp
+        finally:
+            sftp.close()
 
 
 class SftpFile(object):

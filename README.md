@@ -97,6 +97,10 @@ Optional arguments:
 Behaves the same as `run` except that `spawn` immediately returns an object
 representing the running process.
 
+### open(path, mode="r")
+
+Open the file at `path`. Returns a file-like object.
+
 ## Process interface
 
 Returned by calls to `shell.spawn`. Has the following methods:

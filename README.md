@@ -58,6 +58,11 @@ spur.SshShell(
 )
 ```
 
+Optional arguments:
+
+* `connect_timeout` -- a timeout in seconds for establishing an SSH connection.
+  Defaults to 60 (one minute).
+
 ## Shell interface
 
 ### run(command, cwd, update_env, allow_error, stdout, stderr)

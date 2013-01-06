@@ -14,14 +14,18 @@ from spur.files import FileOperations
 import spur.results
 from .io import IoHandler
 
+
+_ONE_MINUTE = 60
+
 class SshShell(object):
-    def __init__(self, hostname, username, password=None, port=22, private_key_file=None):
+    def __init__(self, hostname, username, password=None, port=22, private_key_file=None, connect_timeout=None):
         self._hostname = hostname
         self._port = port
         self._username = username
         self._password = password
         self._private_key_file = private_key_file
         self._client = None
+        self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
 
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()
@@ -103,7 +107,8 @@ class SshShell(object):
                 port=self._port,
                 username=self._username,
                 password=self._password,
-                key_filename=self._private_key_file
+                key_filename=self._private_key_file,
+                timeout=self._connect_timeout
             )
             self._client = client
         return self._client

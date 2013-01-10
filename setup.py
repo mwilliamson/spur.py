@@ -13,6 +13,7 @@ setup(
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/spur.py',
+    keywords="ssh shell subprocess process",
     packages=['spur'],
     install_requires=["paramiko>=1.9.0,<2"],
 )

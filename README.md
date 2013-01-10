@@ -21,6 +21,10 @@ result = shell.run(["echo", "-n", "hello"])
 print result.output # prints hello
 ```
 
+## Installation
+
+```$ pip install spur```
+
 ## Shell constructors
 
 ### LocalShell

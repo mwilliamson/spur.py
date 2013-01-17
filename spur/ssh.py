@@ -6,6 +6,7 @@ import contextlib
 import uuid
 import time
 import re
+import socket
 
 import paramiko
 
@@ -16,6 +17,11 @@ from .io import IoHandler
 
 
 _ONE_MINUTE = 60
+
+
+class ConnectionError(Exception):
+    pass
+
 
 class SshShell(object):
     def __init__(self, hostname, username, password=None, port=22, private_key_file=None, connect_timeout=None):
@@ -96,7 +102,13 @@ class SshShell(object):
         return FileOperations(self)
     
     def _get_ssh_transport(self):
-        return self._connect_ssh().get_transport()
+        try:
+            return self._connect_ssh().get_transport()
+        except (socket.error, paramiko.SSHException, EOFError) as error:
+            raise ConnectionError(
+                "Error creating SSH connection\n" +
+                "Original error: {0}".format(error)
+            )
     
     def _connect_ssh(self):
         if self._client is None:

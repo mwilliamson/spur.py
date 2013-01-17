@@ -35,8 +35,7 @@ class SshShell(object):
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
         command_in_cwd = self._generate_run_command(*args, **kwargs)
-        client = self._connect_ssh()
-        channel = client.get_transport().open_session()
+        channel = self._get_ssh_transport().open_session()
         channel.exec_command(command_in_cwd)
         return SshProcess(
             channel,
@@ -89,13 +88,15 @@ class SshShell(object):
                 sftp.remove(remote_tarball_path)
                 
     def open(self, name, mode="r"):
-        client = self._connect_ssh()
-        sftp = client.open_sftp()
+        sftp = self._open_sftp_client()
         return SftpFile(sftp, sftp.open(name, mode))
                 
     @property
     def files(self):
         return FileOperations(self)
+    
+    def _get_ssh_transport(self):
+        return self._connect_ssh().get_transport()
     
     def _connect_ssh(self):
         if self._client is None:
@@ -115,12 +116,14 @@ class SshShell(object):
     
     @contextlib.contextmanager
     def _connect_sftp(self):
-        client = self._connect_ssh()
-        sftp = client.open_sftp()
+        sftp = self._open_sftp_client()
         try:
             yield sftp
         finally:
             sftp.close()
+            
+    def _open_sftp_client(self):
+        return self._get_ssh_transport().open_sftp_client()
 
 
 class SftpFile(object):

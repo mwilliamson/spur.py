@@ -118,7 +118,7 @@ Open the file at `path`. Returns a file-like object.
 Returned by calls to `shell.spawn`. Has the following attributes:
 
 * `pid` -- the process ID of the process. Only available if `store_pid` was
-  set to `True`.
+  set to `True` when calling `spawn`.
 
 Has the following methods:
 
@@ -129,7 +129,7 @@ Has the following methods:
   instance of `ExecutionResult`. Will raise `RunProcessError` if the return
   code is not zero and `shell.spawn` was not called with `allow_error=True`.
 * `send_signal(signal)` -- sends the process the signal `signal`. Only available
-  if `store_pid` was set to `True`.
+  if `store_pid` was set to `True` when calling `spawn`.
 
 ## Classes
 

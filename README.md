@@ -90,9 +90,9 @@ Optional arguments:
 * `update_env` -- a `dict` containing environment variables to be set before
   running the command. If there's an existing environment variable with the same
   name, it will be overwritten. Otherwise, it is unchanged.
-* `store_pid` -- when calling `spawn`, store the process id of the spawned
-  process as the field `pid` on the returned process object. Has no effect
-  when calling `run`.
+* `store_pid` -- if set to `True` when calling `spawn`, store the process id of
+  the spawned process as the attribute `pid` on the returned process object. Has
+  no effect when calling `run`.
 * `allow_error` -- `False` by default. If `False`, an exception is raised if
   the return code of the command is anything but 0. If `True`, a result is
   returned irrespective of return code.
@@ -115,7 +115,12 @@ Open the file at `path`. Returns a file-like object.
 
 ## Process interface
 
-Returned by calls to `shell.spawn`. Has the following methods:
+Returned by calls to `shell.spawn`. Has the following attributes:
+
+* `pid` -- the process ID of the process. Only available if `store_pid` was
+  set to `True`.
+
+Has the following methods:
 
 * `is_running()` -- return `True` if the process is still running, `False`
   otherwise.
@@ -123,6 +128,8 @@ Returned by calls to `shell.spawn`. Has the following methods:
 * `wait_for_result()` -- wait for the process to exit, and then return an
   instance of `ExecutionResult`. Will raise `RunProcessError` if the return
   code is not zero and `shell.spawn` was not called with `allow_error=True`.
+* `send_signal(signal)` -- sends the process the signal `signal`. Only available
+  if `store_pid` was set to `True`.
 
 ## Classes
 

@@ -63,7 +63,7 @@ class SshShell(object):
         commands = []
 
         if cwd is not None:
-            commands.append("cd {0}".format(cwd))
+            commands.append("cd {0}".format(escape_sh(cwd)))
         
         update_env_commands = [
             "export {0}={1}".format(key, escape_sh(value))

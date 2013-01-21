@@ -1,5 +1,4 @@
 import functools
-import os
 import StringIO
 import time
 import uuid
@@ -50,11 +49,6 @@ def stderr_output_of_run_is_stored(shell):
 def cwd_of_run_can_be_set(shell):
     result = shell.run(["pwd"], cwd="/")
     assert_equal("/\n", result.output)
-
-@test
-def environment_variables_can_be_added_for_run(shell):
-    result = shell.run(["sh", "-c", "echo $NAME"], update_env={"NAME": "Bob"})
-    assert_equal("Bob\n", result.output)
 
 @test
 def environment_variables_can_be_added_for_run(shell):
@@ -208,7 +202,7 @@ def open_can_be_used_as_context_manager(shell):
 
 def _wait_for_assertion(assertion):
     timeout = 1
-    pause = 0.01
+    period = 0.01
     start = time.time()
     while True:
         try:
@@ -217,3 +211,4 @@ def _wait_for_assertion(assertion):
         except AssertionError:
             if time.time() - start > timeout:
                 raise
+            time.sleep(period)

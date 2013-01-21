@@ -1,4 +1,4 @@
-from nose.tools import istest, assert_equal, assert_raises, assert_true
+from nose.tools import istest, assert_raises
 
 import spur
 import spur.ssh

@@ -9,6 +9,12 @@ from .io import IoHandler
 
 
 class LocalShell(object):
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *args):
+        pass
+    
     def upload_dir(self, source, dest, ignore=None):
         shutil.copytree(source, dest, ignore=shutil.ignore_patterns(*ignore))
 

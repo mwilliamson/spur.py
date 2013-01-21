@@ -32,6 +32,15 @@ class SshShell(object):
         self._private_key_file = private_key_file
         self._client = None
         self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
+        self._closed = False
+
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *args):
+        self._closed = True
+        if self._client is not None:
+            self._client.close()
 
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()
@@ -136,6 +145,8 @@ class SshShell(object):
     
     def _connect_ssh(self):
         if self._client is None:
+            if self._closed:
+                raise RuntimeError("Shell is closed")
             client = paramiko.SSHClient()
             client.load_system_host_keys()
             client.set_missing_host_key_policy(paramiko.WarningPolicy())

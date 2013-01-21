@@ -8,28 +8,21 @@ import signal
 from nose.tools import istest, assert_equal, assert_raises, assert_true
 
 import spur
+from .testing import create_ssh_shell
+
 
 def test(func):
     @functools.wraps(func)
     def run_test():
         for shell in _create_shells():
-            yield func, shell
+            with shell:
+                yield func, shell
             
     def _create_shells():
         return [
             spur.LocalShell(),
-            _create_ssh_shell()
+            create_ssh_shell()
         ]
-        
-    def _create_ssh_shell():
-        port_var = os.environ.get("TEST_SSH_PORT")
-        port = int(port_var) if port_var is not None else None
-        return spur.SshShell(
-            hostname=os.environ.get("TEST_SSH_HOSTNAME", "127.0.0.1"),
-            username=os.environ["TEST_SSH_USERNAME"],
-            password=os.environ["TEST_SSH_PASSWORD"],
-            port=port
-        )
         
     return istest(run_test)
 

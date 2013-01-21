@@ -69,7 +69,7 @@ Optional arguments:
 
 ## Shell interface
 
-### run(command, cwd, update_env, allow_error, stdout, stderr)
+### run(command, cwd, update_env, store_pid, allow_error, stdout, stderr)
 
 Run a command and wait for it to complete. The command is expected to be a list
 of strings. Returns an instance of `ExecutionResult`.
@@ -90,6 +90,9 @@ Optional arguments:
 * `update_env` -- a `dict` containing environment variables to be set before
   running the command. If there's an existing environment variable with the same
   name, it will be overwritten. Otherwise, it is unchanged.
+* `store_pid` -- when calling `spawn`, store the process id of the spawned
+  process as the field `pid` on the returned process object. Has no effect
+  when calling `run`.
 * `allow_error` -- `False` by default. If `False`, an exception is raised if
   the return code of the command is anything but 0. If `True`, a result is
   returned irrespective of return code.
@@ -101,7 +104,7 @@ Optional arguments:
 `shell.run(*args, **kwargs)` should behave similarly to
 `shell.spawn(*args, **kwargs).wait_for_result()`
 
-### spawn(command, cwd, update_env, allow_error, stdout, stderr)
+### spawn(command, cwd, update_env, store_pid, allow_error, stdout, stderr)
 
 Behaves the same as `run` except that `spawn` immediately returns an object
 representing the running process.

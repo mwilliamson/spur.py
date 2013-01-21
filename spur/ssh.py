@@ -59,18 +59,25 @@ class SshShell(object):
         finally:
             self.run(["rm", "-rf", temp_dir])
     
-    def _generate_run_command(self, command_args, cwd="/", update_env={}, new_process_group=False):
-        command = " ".join(map(escape_sh, command_args))
+    def _generate_run_command(self, command_args, cwd=None, update_env={}, new_process_group=False):
+        commands = []
+
+        if cwd is not None:
+            commands.append("cd {0}".format(cwd))
         
-        update_env_commands = " ".join([
-            "export {0}={1};".format(key, escape_sh(value))
+        update_env_commands = [
+            "export {0}={1}".format(key, escape_sh(value))
             for key, value in update_env.iteritems()
-        ])
+        ]
+        commands += update_env_commands
         
+        command = " ".join(map(escape_sh, command_args))
         if new_process_group:
             command = "setsid {0}".format(command)
+            
+        commands.append(command)
         
-        return "cd {0}; {1} {2}".format(cwd, update_env_commands, command)
+        return "; ".join(commands)
         
     
     def upload_dir(self, local_dir, remote_dir, ignore):

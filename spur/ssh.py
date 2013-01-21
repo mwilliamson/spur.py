@@ -40,15 +40,26 @@ class SshShell(object):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
-        command_in_cwd = self._generate_run_command(*args, **kwargs)
+        store_pid = kwargs.pop("store_pid", False)
+        command_in_cwd = self._generate_run_command(*args, store_pid=store_pid, **kwargs)
         channel = self._get_ssh_transport().open_session()
         channel.exec_command(command_in_cwd)
-        return SshProcess(
+        
+        process_stdout = channel.makefile('rb')
+        if store_pid:
+            pid = int(process_stdout.readline().strip())
+            
+        process = SshProcess(
             channel,
             allow_error=allow_error,
+            process_stdout=process_stdout,
             stdout=stdout,
             stderr=stderr
         )
+        if store_pid:
+            process.pid = pid
+        
+        return process
     
     @contextlib.contextmanager
     def temporary_dir(self):
@@ -59,8 +70,12 @@ class SshShell(object):
         finally:
             self.run(["rm", "-rf", temp_dir])
     
-    def _generate_run_command(self, command_args, cwd=None, update_env={}, new_process_group=False):
+    def _generate_run_command(self, command_args, store_pid,
+            cwd=None, update_env={}, new_process_group=False):
         commands = []
+
+        if store_pid:
+            commands.append("echo $$")
 
         if cwd is not None:
             commands.append("cd {0}".format(escape_sh(cwd)))
@@ -72,6 +87,7 @@ class SshShell(object):
         commands += update_env_commands
         
         command = " ".join(map(escape_sh, command_args))
+        command = "exec {0}".format(command)
         if new_process_group:
             command = "setsid {0}".format(command)
             
@@ -173,11 +189,11 @@ def escape_sh(value):
 
 
 class SshProcess(object):
-    def __init__(self, channel, allow_error, stdout, stderr):
+    def __init__(self, channel, allow_error, process_stdout, stdout, stderr):
         self._channel = channel
         self._allow_error = allow_error
         self._stdin = channel.makefile('wb')
-        self._stdout = channel.makefile('rb')
+        self._stdout = process_stdout
         self._stderr = channel.makefile_stderr('rb')
         self._result = None
         

@@ -158,6 +158,18 @@ def can_write_stderr_to_file_object_while_process_is_executing(shell):
     assert process.is_running()
     process.stdin_write("\n")
     assert_equal("hello\n", process.wait_for_result().stderr_output)
+        
+@test
+def can_get_process_id_of_process_if_store_pid_is_true(shell):
+    # TODO: document store_pid
+    process = shell.spawn(["sh", "-c", "echo $$"], store_pid=True)
+    result = process.wait_for_result()
+    assert_equal(int(result.output.strip()), process.pid)
+    
+@test
+def process_id_is_not_available_if_store_pid_is_not_set(shell):
+    process = shell.spawn(["sh", "-c", "echo $$"])
+    assert not hasattr(process, "pid")
     
 @test
 def can_write_to_files_opened_by_open(shell):

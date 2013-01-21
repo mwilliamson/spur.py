@@ -26,13 +26,17 @@ class LocalShell(object):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
+        store_pid = kwargs.pop("store_pid", False)
         process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
-        return LocalProcess(
+        spur_process = LocalProcess(
             process,
             allow_error=allow_error,
             stdout=stdout,
             stderr=stderr
         )
+        if store_pid:
+            spur_process.pid = process.pid
+        return spur_process
         
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()

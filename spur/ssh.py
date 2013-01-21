@@ -54,7 +54,8 @@ class SshShell(object):
             allow_error=allow_error,
             process_stdout=process_stdout,
             stdout=stdout,
-            stderr=stderr
+            stderr=stderr,
+            shell=self,
         )
         if store_pid:
             process.pid = pid
@@ -189,12 +190,13 @@ def escape_sh(value):
 
 
 class SshProcess(object):
-    def __init__(self, channel, allow_error, process_stdout, stdout, stderr):
+    def __init__(self, channel, allow_error, process_stdout, stdout, stderr, shell):
         self._channel = channel
         self._allow_error = allow_error
         self._stdin = channel.makefile('wb')
         self._stdout = process_stdout
         self._stderr = channel.makefile_stderr('rb')
+        self._shell = shell
         self._result = None
         
         self._io = IoHandler([
@@ -207,6 +209,9 @@ class SshProcess(object):
         
     def stdin_write(self, value):
         self._channel.sendall(value)
+        
+    def send_signal(self, signal):
+        self._shell.run(["kill", "-{0}".format(signal), str(self.pid)])
         
     def wait_for_result(self):
         if self._result is None:

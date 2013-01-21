@@ -3,6 +3,7 @@ import os
 import StringIO
 import time
 import uuid
+import signal
 
 from nose.tools import istest, assert_equal, assert_raises, assert_true
 
@@ -170,6 +171,14 @@ def can_get_process_id_of_process_if_store_pid_is_true(shell):
 def process_id_is_not_available_if_store_pid_is_not_set(shell):
     process = shell.spawn(["sh", "-c", "echo $$"])
     assert not hasattr(process, "pid")
+        
+@test
+def can_send_signal_to_process_if_store_pid_is_set(shell):
+    # TODO: document send_signal
+    process = shell.spawn(["cat"], store_pid=True)
+    assert process.is_running()
+    process.send_signal(signal.SIGTERM)
+    _wait_for_assertion(lambda: assert_equal(False, process.is_running()))
     
 @test
 def can_write_to_files_opened_by_open(shell):

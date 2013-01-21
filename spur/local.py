@@ -81,12 +81,15 @@ class LocalProcess(object):
     def stdin_write(self, value):
         self._subprocess.stdin.write(value)
         
+    def send_signal(self, signal):
+        self._subprocess.send_signal(signal)
+        
     def wait_for_result(self):
         if self._result is None:
             self._result = self._generate_result()
             
         return self._result
-    
+        
     def _generate_result(self):
         output, stderr_output = self._io.wait()
         return_code = self._subprocess.poll()

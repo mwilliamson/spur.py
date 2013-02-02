@@ -51,7 +51,10 @@ class SshShell(object):
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
         command_in_cwd = self._generate_run_command(*args, store_pid=store_pid, **kwargs)
-        channel = self._get_ssh_transport().open_session()
+        try:
+            channel = self._get_ssh_transport().open_session()
+        except EOFError as error:
+            raise self._connection_error(error)
         channel.exec_command(command_in_cwd)
         
         process_stdout = channel.makefile('rb')
@@ -138,10 +141,7 @@ class SshShell(object):
         try:
             return self._connect_ssh().get_transport()
         except (socket.error, paramiko.SSHException, EOFError) as error:
-            raise ConnectionError(
-                "Error creating SSH connection\n" +
-                "Original error: {0}".format(error)
-            )
+            raise self._connection_error(error)
     
     def _connect_ssh(self):
         if self._client is None:
@@ -171,6 +171,12 @@ class SshShell(object):
             
     def _open_sftp_client(self):
         return self._get_ssh_transport().open_sftp_client()
+        
+    def _connection_error(self, error):
+        return ConnectionError(
+            "Error creating SSH connection\n" +
+            "Original error: {0}".format(error)
+        )
 
 
 class SftpFile(object):

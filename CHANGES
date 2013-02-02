@@ -1,0 +1,6 @@
+# CHANGES
+
+## 0.2.4
+
+* Catch EOFError and wrap it in spur.ssh.ConnectionError when opening SSH
+  session

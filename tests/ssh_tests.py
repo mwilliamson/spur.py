@@ -12,7 +12,8 @@ def attempting_to_connect_to_wrong_port_raises_connection_error():
             username="bob",
             password="password1",
             hostname="localhost",
-            port=54321
+            port=54321,
+            missing_host_key=spur.ssh.MissingHostKey.accept,
         )
         shell.run(["echo", "hello"])
         

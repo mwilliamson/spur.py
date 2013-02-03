@@ -23,8 +23,27 @@ class ConnectionError(Exception):
     pass
 
 
+class AcceptParamikoPolicy(paramiko.MissingHostKeyPolicy):
+    def missing_host_key(self, client, hostname, key):
+        return
+
+
+class MissingHostKey(object):
+    raise_error = paramiko.RejectPolicy()
+    warn = paramiko.WarningPolicy()
+    auto_add = paramiko.AutoAddPolicy()
+    accept = AcceptParamikoPolicy()
+
+
 class SshShell(object):
-    def __init__(self, hostname, username, password=None, port=22, private_key_file=None, connect_timeout=None):
+    def __init__(self,
+            hostname,
+            username,
+            password=None,
+            port=22,
+            private_key_file=None,
+            connect_timeout=None,
+            missing_host_key=None):
         self._hostname = hostname
         self._port = port
         self._username = username
@@ -33,6 +52,11 @@ class SshShell(object):
         self._client = None
         self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
         self._closed = False
+        
+        if missing_host_key is None:
+            self._missing_host_key = MissingHostKey.raise_error
+        else:
+            self._missing_host_key = missing_host_key
 
     def __enter__(self):
         return self
@@ -149,7 +173,7 @@ class SshShell(object):
                 raise RuntimeError("Shell is closed")
             client = paramiko.SSHClient()
             client.load_system_host_keys()
-            client.set_missing_host_key_policy(paramiko.WarningPolicy())
+            client.set_missing_host_key_policy(self._missing_host_key)
             client.connect(
                 hostname=self._hostname,
                 port=self._port,

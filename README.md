@@ -66,6 +66,13 @@ Optional arguments:
 
 * `connect_timeout` -- a timeout in seconds for establishing an SSH connection.
   Defaults to 60 (one minute).
+  
+* `missing_host_key` -- by default, an error is raised when a host key is
+  missing. One of the following values can be used to change the behaviour
+  when a host key is missing:
+  - `spur.ssh.MissingHostKey.raise_error` -- raise an error
+  - `spur.ssh.MissingHostKey.warn` -- accept the host key and log a warning
+  - `spur.ssh.MissingHostKey.accept` -- accept the host key
 
 ## Shell interface
 

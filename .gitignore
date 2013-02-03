@@ -1,2 +1,3 @@
 *.pyc
 _virtualenv
+spur.egg-info

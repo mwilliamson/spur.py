@@ -90,6 +90,8 @@ Note that arguments are passed without any shell expansion. For instance,
 `shell.run(["echo", "$PATH"])` will print the literal string `$PATH` rather
 than the value of the environment variable `$PATH`.
 
+Raises `spur.NoSuchCommandError` if trying to execute a non-existent command.
+
 Optional arguments:
 
 * `cwd` -- change the current directory to this value before executing the
@@ -115,6 +117,8 @@ Optional arguments:
 
 Behaves the same as `run` except that `spawn` immediately returns an object
 representing the running process.
+
+Raises `spur.NoSuchCommandError` if trying to execute a non-existent command.
 
 ### open(path, mode="r")
 
@@ -166,3 +170,9 @@ A subclass of `RuntimeError` with the same properties as `ExecutionResult`:
 * `return_code` -- the return code of the command
 * `output` -- a string containing the result of capturing stdout
 * `stderr_output` -- a string containing the result of capturing stdout
+
+### NoSuchCommandError
+
+`NoSuchCommandError` has the following properties:
+
+* `command` -- the command that could not be found

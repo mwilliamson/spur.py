@@ -14,6 +14,7 @@ from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
 import spur.results
 from .io import IoHandler
+from .errors import NoSuchCommandError
 
 
 _ONE_MINUTE = 60
@@ -69,12 +70,12 @@ class SshShell(object):
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()
     
-    def spawn(self, *args, **kwargs):
+    def spawn(self, command, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
-        command_in_cwd = self._generate_run_command(*args, store_pid=store_pid, **kwargs)
+        command_in_cwd = self._generate_run_command(command, *args, store_pid=store_pid, **kwargs)
         try:
             channel = self._get_ssh_transport().open_session()
         except EOFError as error:
@@ -82,9 +83,15 @@ class SshShell(object):
         channel.exec_command(command_in_cwd)
         
         process_stdout = channel.makefile('rb')
+        
         if store_pid:
             pid = int(process_stdout.readline().strip())
             
+        which_return_code = int(process_stdout.readline().strip())
+        
+        if which_return_code != 0:
+            raise NoSuchCommandError(command[0])
+        
         process = SshProcess(
             channel,
             allow_error=allow_error,
@@ -122,6 +129,7 @@ class SshShell(object):
             for key, value in update_env.iteritems()
         ]
         commands += update_env_commands
+        commands.append("which {0} > /dev/null 2>&1 ; echo $?".format(escape_sh(command_args[0])))
         
         command = " ".join(map(escape_sh, command_args))
         command = "exec {0}".format(command)

@@ -165,6 +165,33 @@ def can_send_signal_to_process_if_store_pid_is_set(shell):
     process.send_signal(signal.SIGTERM)
     _wait_for_assertion(lambda: assert_equal(False, process.is_running()))
     
+    
+@test
+def spawning_non_existent_command_raises_specific_no_such_command_exception(shell):
+    try:
+        shell.spawn(["bin/i-am-not-a-command"])
+        # Expected exception
+        assert False
+    except spur.NoSuchCommandError as error:
+        assert_equal("No such command: bin/i-am-not-a-command", error.message)
+        assert_equal("bin/i-am-not-a-command", error.command)
+
+
+@test
+def spawning_command_that_uses_path_env_variable_asks_if_command_is_installed(shell):
+    try:
+        shell.spawn(["i-am-not-a-command"])
+        # Expected exception
+        assert False
+    except spur.NoSuchCommandError as error:
+        expected_message = (
+            "Command not found: i-am-not-a-command." +
+            " Check that i-am-not-a-command is installed and on $PATH"
+        )
+        assert_equal(expected_message, error.message)
+        assert_equal("i-am-not-a-command", error.command)
+
+    
 @test
 def can_write_to_files_opened_by_open(shell):
     path = "/tmp/{0}".format(uuid.uuid4())

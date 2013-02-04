@@ -6,6 +6,7 @@ from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
 import spur.results
 from .io import IoHandler
+from .errors import NoSuchCommandError
 
 
 class LocalShell(object):
@@ -28,12 +29,16 @@ class LocalShell(object):
         subprocess.check_call(["mkdir", "-p", os.path.dirname(remote_path)])
         open(remote_path, "w").write(contents)
 
-    def spawn(self, *args, **kwargs):
+    def spawn(self, command, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
-        process = subprocess.Popen(**self._subprocess_args(*args, **kwargs))
+        try:
+            process = subprocess.Popen(**self._subprocess_args(command, *args, **kwargs))
+        except OSError:
+            raise NoSuchCommandError(command[0])
+            
         spur_process = LocalProcess(
             process,
             allow_error=allow_error,

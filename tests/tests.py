@@ -149,7 +149,6 @@ def can_write_stderr_to_file_object_while_process_is_executing(shell):
         
 @test
 def can_get_process_id_of_process_if_store_pid_is_true(shell):
-    # TODO: document store_pid
     process = shell.spawn(["sh", "-c", "echo $$"], store_pid=True)
     result = process.wait_for_result()
     assert_equal(int(result.output.strip()), process.pid)
@@ -161,7 +160,6 @@ def process_id_is_not_available_if_store_pid_is_not_set(shell):
         
 @test
 def can_send_signal_to_process_if_store_pid_is_set(shell):
-    # TODO: document send_signal
     process = shell.spawn(["cat"], store_pid=True)
     assert process.is_running()
     process.send_signal(signal.SIGTERM)

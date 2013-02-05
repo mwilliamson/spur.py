@@ -1,6 +1,9 @@
 import os
 import subprocess
 import shutil
+import pty
+import StringIO
+import threading
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
@@ -34,14 +37,51 @@ class LocalShell(object):
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
+        use_pty = kwargs.pop("use_pty", False)
         try:
-            process = subprocess.Popen(**self._subprocess_args(command, *args, **kwargs))
+            if use_pty:
+                master, slave = pty.openpty()
+                stdin_arg = slave
+                stdout_arg = slave
+                stderr_arg = subprocess.STDOUT
+            else:
+                stdin_arg = subprocess.PIPE
+                stdout_arg = subprocess.PIPE
+                stderr_arg = subprocess.PIPE
+                
+            process = subprocess.Popen(
+                stdin=stdin_arg,
+                stdout=stdout_arg,
+                stderr=stderr_arg,
+                **self._subprocess_args(command, *args, **kwargs)
+            )
+            
+            if use_pty:
+                process_stdin = os.fdopen(os.dup(master), "w")
+                process_stdout = os.fdopen(master)
+                process_stderr = StringIO.StringIO()
+                
+                def close_slave_on_exit():
+                    process.wait()
+                    os.close(slave)
+                
+                thread = threading.Thread(target=close_slave_on_exit)
+                thread.daemon = True
+                thread.start()
+                
+            else:
+                process_stdin = process.stdin
+                process_stdout = process.stdout
+                process_stderr = process.stderr
         except OSError:
             raise NoSuchCommandError(command[0])
             
         spur_process = LocalProcess(
             process,
             allow_error=allow_error,
+            process_stdin=process_stdin,
+            process_stdout=process_stdout,
+            process_stderr=process_stderr,
             stdout=stdout,
             stderr=stderr
         )
@@ -63,9 +103,6 @@ class LocalShell(object):
         kwargs = {
             "args": command,
             "cwd": cwd,
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-            "stdin": subprocess.PIPE
         }
         if update_env is not None:
             new_env = os.environ.copy()
@@ -74,23 +111,25 @@ class LocalShell(object):
         if new_process_group:
             kwargs["preexec_fn"] = os.setpgrp
         return kwargs
+        
 
 class LocalProcess(object):
-    def __init__(self, subprocess, allow_error, stdout, stderr):
+    def __init__(self, subprocess, allow_error, process_stdin, process_stdout, process_stderr, stdout, stderr):
         self._subprocess = subprocess
         self._allow_error = allow_error
+        self._process_stdin = process_stdin
         self._result = None
             
         self._io = IoHandler([
-            (subprocess.stdout, stdout),
-            (subprocess.stderr, stderr),
+            (process_stdout, stdout),
+            (process_stderr, stderr),
         ])
         
     def is_running(self):
         return self._subprocess.poll() is None
         
     def stdin_write(self, value):
-        self._subprocess.stdin.write(value)
+        self._process_stdin.write(value)
         
     def send_signal(self, signal):
         self._subprocess.send_signal(signal)

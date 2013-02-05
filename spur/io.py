@@ -17,6 +17,7 @@ class OutputHandler(object):
     def __init__(self, file_in, file_out):
         self._file_in = file_in
         self._file_out = file_out
+        self._output = ""
         
         self._thread = threading.Thread(target=self._capture_output)
         self._thread.daemon = True
@@ -28,7 +29,14 @@ class OutputHandler(object):
     
     def _capture_output(self):
         if self._file_out is None:
-            self._output = self._file_in.read()
+            try:
+                self._output = self._file_in.read()
+            except IOError as error:
+                # TODO: is there a more elegant fix?
+                # Attempting to read from a pty master that has received nothing
+                # seems to raise an IOError when reading
+                # See: http://bugs.python.org/issue5380
+                self._output = ""
         else:
             output_buffer = []
             while True:

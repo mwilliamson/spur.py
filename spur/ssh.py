@@ -75,11 +75,14 @@ class SshShell(object):
         stderr = kwargs.pop("stderr", None)
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
+        use_pty = kwargs.pop("use_pty", False)
         command_in_cwd = self._generate_run_command(command, *args, store_pid=store_pid, **kwargs)
         try:
             channel = self._get_ssh_transport().open_session()
         except EOFError as error:
             raise self._connection_error(error)
+        if use_pty:
+            channel.get_pty()
         channel.exec_command(command_in_cwd)
         
         process_stdout = channel.makefile('rb')

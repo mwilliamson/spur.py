@@ -4,7 +4,7 @@ import time
 import uuid
 import signal
 
-from nose.tools import istest, assert_equal, assert_raises, assert_true
+from nose.tools import istest, assert_equal, assert_not_equal, assert_raises, assert_true
 
 import spur
 from .testing import create_ssh_shell
@@ -190,6 +190,40 @@ def spawning_command_that_uses_path_env_variable_asks_if_command_is_installed(sh
         )
         assert_equal(expected_message, error.message)
         assert_equal("i-am-not-a-command", error.command)
+
+
+@test
+def commands_are_run_without_pseudo_terminal_by_default(shell):
+    result = shell.run(["bash", "-c", "[ -t 0 ]"], allow_error=True)
+    assert_not_equal(0, result.return_code)
+    
+
+@test
+def command_can_be_explicitly_run_with_pseudo_terminal(shell):
+    result = shell.run(["bash", "-c", "[ -t 0 ]"], allow_error=True, use_pty=True)
+    assert_equal(0, result.return_code)
+    
+
+@test
+def output_is_captured_when_using_pty(shell):
+    result = shell.run(["echo", "-n", "hello"], use_pty=True)
+    assert_equal("hello", result.output)
+    
+
+@test
+def stderr_is_redirected_stdout_when_using_pty(shell):
+    result = shell.run(["sh", "-c", "echo -n hello 1>&2"], use_pty=True)
+    assert_equal("hello", result.output)
+    assert_equal("", result.stderr_output)
+    
+
+@test
+def can_write_to_stdin_of_spawned_process_when_using_pty(shell):
+    process = shell.spawn(["sh", "-c", "read value; echo $value"], use_pty=True)
+    process.stdin_write("hello\n")
+    result = process.wait_for_result()
+    # Get the output twice since the pty echoes input
+    assert_equal("hello\r\nhello\r\n", result.output)
 
     
 @test

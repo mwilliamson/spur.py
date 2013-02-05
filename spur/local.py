@@ -84,7 +84,7 @@ class LocalProcess(object):
         self._io = IoHandler([
             (subprocess.stdout, stdout),
             (subprocess.stderr, stderr),
-        ], lambda: self._subprocess.communicate())
+        ])
         
     def is_running(self):
         return self._subprocess.poll() is None

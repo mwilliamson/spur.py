@@ -251,7 +251,7 @@ class SshProcess(object):
         self._io = IoHandler([
             (self._stdout, stdout),
             (self._stderr, stderr),
-        ], lambda: (self._stdout.read(), self._stderr.read()))
+        ])
         
     def is_running(self):
         return not self._channel.exit_status_ready()

@@ -176,3 +176,25 @@ A subclass of `RuntimeError` with the same properties as `ExecutionResult`:
 `NoSuchCommandError` has the following properties:
 
 * `command` -- the command that could not be found
+
+## API stability
+
+Using the the terminology from [Semantic Versioning][semver], if the version
+of spur is X.Y.Z, then X is the major version, Y is the minor version, and Z is
+the patch version.
+
+[semver]: http://semver.org/spec/v1.0.0.html
+
+While the major version is 0, incrementing the patch version indicates a
+backwards compatible change. For instance, if you're using 0.3.1, then it should
+be safe to upgrade to 0.3.2.
+
+Incrementing the minor version indicates a change in the API. This means that
+any code using previous minor versions of spur may need updating before it can
+use the current minor version.
+
+### Undocumented features
+
+Some features are undocumented, and should be considered experimental. Use them
+at your own risk. They may not behave correctly, and their behaviour and
+interface may change at any time.

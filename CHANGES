@@ -1,5 +1,15 @@
 # CHANGES
 
+## 0.3.2
+
+* Include original error and original traceback on spur.ssh.ConnectionError
+* Add experimental use_pty argument for run and spawn. Use at your own risk!
+
+## 0.3.1
+
+* spur.NoSuchCommandError is now raised if the command passed to run
+  or spawn doesn't exist
+
 ## 0.3.0
 
 * Change default behaviour to raise an error when a host key is missing.

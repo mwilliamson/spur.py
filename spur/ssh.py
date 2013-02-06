@@ -7,6 +7,7 @@ import uuid
 import time
 import re
 import socket
+import traceback
 
 import paramiko
 
@@ -208,10 +209,13 @@ class SshShell(object):
         return self._get_ssh_transport().open_sftp_client()
         
     def _connection_error(self, error):
-        return ConnectionError(
+        connection_error = ConnectionError(
             "Error creating SSH connection\n" +
             "Original error: {0}".format(error)
         )
+        connection_error.original_error = error
+        connection_error.original_traceback = traceback.format_exc()
+        return connection_error
 
 
 class SftpFile(object):

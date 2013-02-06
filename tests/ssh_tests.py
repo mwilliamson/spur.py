@@ -1,4 +1,4 @@
-from nose.tools import istest, assert_raises
+from nose.tools import istest, assert_raises, assert_in
 
 import spur
 import spur.ssh
@@ -8,16 +8,32 @@ from .testing import create_ssh_shell
 @istest
 def attempting_to_connect_to_wrong_port_raises_connection_error():
     def try_connection():
-        shell = spur.SshShell(
-            username="bob",
-            password="password1",
-            hostname="localhost",
-            port=54321,
-            missing_host_key=spur.ssh.MissingHostKey.accept,
-        )
+        shell = _create_shell_with_wrong_port()
         shell.run(["echo", "hello"])
         
     assert_raises(spur.ssh.ConnectionError, try_connection)
+
+
+@istest
+def connection_error_contains_original_error():
+    try:
+        shell = _create_shell_with_wrong_port()
+        shell.run(["true"])
+        # Expected error
+        assert False
+    except spur.ssh.ConnectionError as error:
+        assert isinstance(error.original_error, IOError)
+
+
+@istest
+def connection_error_contains_traceback_for_original_error():
+    try:
+        shell = _create_shell_with_wrong_port()
+        shell.run(["true"])
+        # Expected error
+        assert False
+    except spur.ssh.ConnectionError as error:
+        assert_in("Traceback (most recent call last):", error.original_traceback)
 
 
 @istest
@@ -44,3 +60,13 @@ def trying_to_use_ssh_shell_after_exit_results_in_error():
         pass
         
     assert_raises(Exception, lambda: shell.run(["true"]))
+
+
+def _create_shell_with_wrong_port():
+    return spur.SshShell(
+        username="bob",
+        password="password1",
+        hostname="localhost",
+        port=54321,
+        missing_host_key=spur.ssh.MissingHostKey.accept,
+    )

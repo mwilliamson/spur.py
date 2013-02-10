@@ -17,7 +17,8 @@ is how the shell is created:
 import spur
 
 shell = spur.SshShell(hostname="localhost", username="bob", password="password1")
-result = shell.run(["echo", "-n", "hello"])
+with shell:
+    result = shell.run(["echo", "-n", "hello"])
 print result.output # prints hello
 ```
 

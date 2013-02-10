@@ -198,3 +198,9 @@ use the current minor version.
 Some features are undocumented, and should be considered experimental. Use them
 at your own risk. They may not behave correctly, and their behaviour and
 interface may change at any time.
+
+## Troubleshooting
+
+### I get the error "Connection refused" when trying to connect to a virtual machine using a forwarded port on `localhost`
+
+Try using `"127.0.0.1"` instead of `"localhost"` as the hostname.

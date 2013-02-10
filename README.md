@@ -204,3 +204,30 @@ interface may change at any time.
 ### I get the error "Connection refused" when trying to connect to a virtual machine using a forwarded port on `localhost`
 
 Try using `"127.0.0.1"` instead of `"localhost"` as the hostname.
+
+### I get the error "Connection refused" when trying to execute commands over SSH
+
+Try connecting to the machine using SSH on the command line with the same
+settings. For instance, if you're using the code:
+
+```python
+shell = spur.SshShell(
+        hostname="remote",
+        port=2222,
+        username="bob",
+        private_key_file="/home/bob/.ssh/id_rsa"
+    )
+with shell:
+    result = shell.run(["echo", "hello"])
+```
+
+Try running:
+
+```
+ssh bob@remote -p 2222 -i /home/bob/.ssh/id_rsa
+```
+
+If the `ssh` command succeeds, make sure that the settings between invocation
+of `ssh.SshShell` and the `ssh` command are the same. If any of the arguments
+to `ssh.SshShell` are dynamically generated, try hard-coding them to make sure
+they're set to the values you expect.

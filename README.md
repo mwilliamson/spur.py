@@ -227,7 +227,7 @@ Try running:
 ssh bob@remote -p 2222 -i /home/bob/.ssh/id_rsa
 ```
 
-If the `ssh` command succeeds, make sure that the settings between invocation
-of `ssh.SshShell` and the `ssh` command are the same. If any of the arguments
-to `ssh.SshShell` are dynamically generated, try hard-coding them to make sure
-they're set to the values you expect.
+If the `ssh` command succeeds, make sure that the arguments to `ssh.SshShell`
+and the `ssh` command are the same. If any of the arguments to `ssh.SshShell`
+are dynamically generated, try hard-coding them to make sure they're set to the
+values you expect.

@@ -3,7 +3,7 @@ from nose.tools import istest, assert_raises, assert_in
 import spur
 import spur.ssh
 from .testing import create_ssh_shell
-from . import tests
+from . import tests, process_tests
 
 
 def _run_ssh_test(test_func):
@@ -12,6 +12,7 @@ def _run_ssh_test(test_func):
         
         
 SshTests = tests.create("SshTests", _run_ssh_test)
+SshProcessTests = process_tests.create("SshProcessTests", _run_ssh_test)
 
 
 @istest

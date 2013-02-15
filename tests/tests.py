@@ -8,22 +8,12 @@ from nose.tools import istest, assert_equal, assert_not_equal, assert_raises, as
 
 import spur
 from .testing import create_ssh_shell
+from test_sets import TestSetBuilder
 
+test_set_builder = TestSetBuilder()
 
-def test(func):
-    @functools.wraps(func)
-    def run_test():
-        for shell in _create_shells():
-            with shell:
-                yield func, shell
-            
-    def _create_shells():
-        return [
-            spur.LocalShell(),
-            create_ssh_shell()
-        ]
-        
-    return istest(run_test)
+test = test_set_builder.add_test
+
 
 @test
 def output_of_run_is_stored(shell):
@@ -271,3 +261,17 @@ def _wait_for_assertion(assertion):
             if time.time() - start > timeout:
                 raise
             time.sleep(period)
+
+
+def _run_ssh_test(test_func):
+    with create_ssh_shell() as shell:
+        test_func(shell)
+        
+        
+SshTests = test_set_builder.create("SshTests", _run_ssh_test)
+
+def _run_local_test(test_func):
+    with spur.LocalShell() as shell:
+        test_func(shell)
+
+LocalTests = test_set_builder.create("LocalTests", _run_local_test)

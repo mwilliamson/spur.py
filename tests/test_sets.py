@@ -1,5 +1,4 @@
 import functools
-import contextlib
 
 from nose.tools import istest, nottest
 

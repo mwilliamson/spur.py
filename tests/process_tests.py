@@ -1,13 +1,10 @@
-import functools
 import StringIO
 import time
-import uuid
 import signal
 
-from nose.tools import istest, assert_equal, assert_not_equal, assert_raises, assert_true
+from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_true
 
 import spur
-from .testing import create_ssh_shell
 from test_sets import TestSetBuilder
 
 

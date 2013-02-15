@@ -4,8 +4,6 @@ import os.path
 import shutil
 import contextlib
 import uuid
-import time
-import re
 import socket
 import traceback
 

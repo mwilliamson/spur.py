@@ -31,7 +31,7 @@ class OutputHandler(object):
         if self._file_out is None:
             try:
                 self._output = self._file_in.read()
-            except IOError as error:
+            except IOError:
                 # TODO: is there a more elegant fix?
                 # Attempting to read from a pty master that has received nothing
                 # seems to raise an IOError when reading

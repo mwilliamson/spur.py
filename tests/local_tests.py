@@ -1,6 +1,6 @@
 import spur
 
-from . import tests, process_tests
+from . import open_test_set, process_test_set
 
 
 def _run_local_test(test_func):
@@ -8,5 +8,5 @@ def _run_local_test(test_func):
         test_func(shell)
 
 
-LocalTests = tests.create("LocalTests", _run_local_test)
-LocalProcessTests = process_tests.create("LocalProcessTests", _run_local_test)
+LocalOpenTests = open_test_set.create("LocalOpenTests", _run_local_test)
+LocalProcessTests = process_test_set.create("LocalProcessTests", _run_local_test)

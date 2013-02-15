@@ -10,7 +10,13 @@ import spur
 from .testing import create_ssh_shell
 from test_sets import TestSetBuilder
 
+
+__all__ = ["create"]
+
+
 test_set_builder = TestSetBuilder()
+
+create = test_set_builder.create
 
 test = test_set_builder.add_test
 
@@ -261,17 +267,3 @@ def _wait_for_assertion(assertion):
             if time.time() - start > timeout:
                 raise
             time.sleep(period)
-
-
-def _run_ssh_test(test_func):
-    with create_ssh_shell() as shell:
-        test_func(shell)
-        
-        
-SshTests = test_set_builder.create("SshTests", _run_ssh_test)
-
-def _run_local_test(test_func):
-    with spur.LocalShell() as shell:
-        test_func(shell)
-
-LocalTests = test_set_builder.create("LocalTests", _run_local_test)

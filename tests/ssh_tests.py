@@ -3,6 +3,15 @@ from nose.tools import istest, assert_raises, assert_in
 import spur
 import spur.ssh
 from .testing import create_ssh_shell
+from . import tests
+
+
+def _run_ssh_test(test_func):
+    with create_ssh_shell() as shell:
+        test_func(shell)
+        
+        
+SshTests = tests.create("SshTests", _run_ssh_test)
 
 
 @istest

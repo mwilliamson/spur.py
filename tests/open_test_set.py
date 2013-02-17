@@ -2,7 +2,7 @@ import uuid
 
 from nose.tools import assert_equal
 
-from test_sets import TestSetBuilder
+from nose_test_sets import TestSetBuilder
 
 
 __all__ = ["create"]

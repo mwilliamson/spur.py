@@ -5,7 +5,7 @@ import signal
 from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_true
 
 import spur
-from test_sets import TestSetBuilder
+from nose_test_sets import TestSetBuilder
 
 
 __all__ = ["create"]

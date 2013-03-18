@@ -38,7 +38,7 @@ class MissingHostKey(object):
 class SshShell(object):
     def __init__(self,
             hostname,
-            username,
+            username=None,
             password=None,
             port=22,
             private_key_file=None,

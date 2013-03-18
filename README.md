@@ -38,7 +38,7 @@ spur.LocalShell()
 
 ### SshShell
 
-Requires a hostname and a username. Also requires some combination of a password
+Requires a hostname. Also requires some combination of a username, password
 and private key, as necessary to authenticate:
 
 ```python

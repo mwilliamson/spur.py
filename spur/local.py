@@ -144,7 +144,7 @@ class LocalProcess(object):
         
     def _generate_result(self):
         output, stderr_output = self._io.wait()
-        return_code = self._subprocess.poll()
+        return_code = self._subprocess.wait()
         
         return spur.results.result(
             return_code,

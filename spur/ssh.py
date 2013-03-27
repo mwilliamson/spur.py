@@ -131,7 +131,7 @@ class SshShell(object):
             for key, value in update_env.iteritems()
         ]
         commands += update_env_commands
-        commands.append("which {0} > /dev/null 2>&1 ; echo $?".format(escape_sh(command_args[0])))
+        commands.append("command -v {0} > /dev/null 2>&1 ; echo $?".format(escape_sh(command_args[0])))
         
         command = " ".join(map(escape_sh, command_args))
         command = "exec {0}".format(command)

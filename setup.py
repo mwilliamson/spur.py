@@ -7,13 +7,12 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name='spur',
+    name='spur.local',
     version='0.3.5',
-    description='Run commands and manipulate files locally or over SSH using the same interface',
+    description='Run commands and manipulate files locally',
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/spur.py',
-    keywords="ssh shell subprocess process",
+    keywords="shell subprocess process",
     packages=['spur'],
-    install_requires=["paramiko>=1.9.0,<2"],
 )

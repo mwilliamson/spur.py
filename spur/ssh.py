@@ -87,9 +87,9 @@ class SshShell(object):
         process_stdout = channel.makefile('rb')
         
         if store_pid:
-            pid = int(process_stdout.readline().strip())
+            pid = _read_int_line(process_stdout)
             
-        which_return_code = int(process_stdout.readline().strip())
+        which_return_code = _read_int_line(process_stdout)
         
         if which_return_code != 0:
             raise NoSuchCommandError(command[0])
@@ -214,6 +214,13 @@ class SshShell(object):
         connection_error.original_error = error
         connection_error.original_traceback = traceback.format_exc()
         return connection_error
+
+
+def _read_int_line(output_file):
+    while True:
+        line = output_file.readline().strip()
+        if line:
+            return int(line)
 
 
 class SftpFile(object):

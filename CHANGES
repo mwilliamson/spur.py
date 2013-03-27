@@ -1,5 +1,19 @@
 # CHANGES
 
+## 0.3.5
+
+* SshShell: Use "command -v" instead of "which" for better POSIX compliance.
+* SshShell: Skip blank lines when expecting echoed return code.
+
+## 0.3.4
+
+* LocalShell: Use Popen.wait instead of Popen.poll to get return code of local
+  process to ensure process has exited.
+
+## 0.3.3
+
+* Make username argument to SshShell optional. Closes GitHub issue #4.
+
 ## 0.3.2
 
 * Include original error and original traceback on spur.ssh.ConnectionError

@@ -1,4 +1,7 @@
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import time
 import signal
 
@@ -118,7 +121,7 @@ def can_tell_if_spawned_process_is_running(shell):
     
 @test
 def can_write_stdout_to_file_object_while_process_is_executing(shell):
-    output_file = StringIO.StringIO()
+    output_file = StringIO()
     process = shell.spawn(
         ["sh", "-c", "echo hello; read dont_care;"],
         stdout=output_file
@@ -130,7 +133,7 @@ def can_write_stdout_to_file_object_while_process_is_executing(shell):
     
 @test
 def can_write_stderr_to_file_object_while_process_is_executing(shell):
-    output_file = StringIO.StringIO()
+    output_file = StringIO()
     process = shell.spawn(
         ["sh", "-c", "echo hello 1>&2; read dont_care;"],
         stderr=output_file

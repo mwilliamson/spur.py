@@ -1,4 +1,4 @@
-from nose.tools import istest, assert_raises, assert_in
+from nose.tools import istest, assert_raises
 
 import spur
 import spur.ssh
@@ -43,7 +43,7 @@ def connection_error_contains_traceback_for_original_error():
         # Expected error
         assert False
     except spur.ssh.ConnectionError as error:
-        assert_in("Traceback (most recent call last):", error.original_traceback)
+        assert "Traceback (most recent call last):" in error.original_traceback
 
 
 @istest

@@ -1,4 +1,7 @@
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import time
 import signal
 
@@ -76,7 +79,7 @@ def exception_message_contains_return_code_and_all_output(shell):
     except spur.RunProcessError as error:
         assert_equal(
             "return code: 1\noutput: starting\n\nstderr output: failed!\n",
-            error.message
+            error.args[0]
         )
 
 @test
@@ -118,7 +121,7 @@ def can_tell_if_spawned_process_is_running(shell):
     
 @test
 def can_write_stdout_to_file_object_while_process_is_executing(shell):
-    output_file = StringIO.StringIO()
+    output_file = StringIO()
     process = shell.spawn(
         ["sh", "-c", "echo hello; read dont_care;"],
         stdout=output_file
@@ -130,7 +133,7 @@ def can_write_stdout_to_file_object_while_process_is_executing(shell):
     
 @test
 def can_write_stderr_to_file_object_while_process_is_executing(shell):
-    output_file = StringIO.StringIO()
+    output_file = StringIO()
     process = shell.spawn(
         ["sh", "-c", "echo hello 1>&2; read dont_care;"],
         stderr=output_file
@@ -166,7 +169,7 @@ def spawning_non_existent_command_raises_specific_no_such_command_exception(shel
         # Expected exception
         assert False
     except spur.NoSuchCommandError as error:
-        assert_equal("No such command: bin/i-am-not-a-command", error.message)
+        assert_equal("No such command: bin/i-am-not-a-command", error.args[0])
         assert_equal("bin/i-am-not-a-command", error.command)
 
 
@@ -181,7 +184,7 @@ def spawning_command_that_uses_path_env_variable_asks_if_command_is_installed(sh
             "Command not found: i-am-not-a-command." +
             " Check that i-am-not-a-command is installed and on $PATH"
         )
-        assert_equal(expected_message, error.message)
+        assert_equal(expected_message, error.args[0])
         assert_equal("i-am-not-a-command", error.command)
 
 

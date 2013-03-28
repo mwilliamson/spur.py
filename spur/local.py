@@ -2,7 +2,10 @@ import os
 import subprocess
 import shutil
 import pty
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import threading
 
 from spur.tempdir import create_temporary_dir
@@ -61,7 +64,7 @@ class LocalShell(object):
                 # garbage collection
                 process_stdin = os.fdopen(os.dup(master), "w")
                 process_stdout = os.fdopen(master)
-                process_stderr = StringIO.StringIO()
+                process_stderr = StringIO()
                 
                 def close_slave_on_exit():
                     process.wait()

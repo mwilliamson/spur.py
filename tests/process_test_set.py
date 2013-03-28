@@ -76,7 +76,7 @@ def exception_message_contains_return_code_and_all_output(shell):
     except spur.RunProcessError as error:
         assert_equal(
             "return code: 1\noutput: starting\n\nstderr output: failed!\n",
-            error.message
+            error.args[0]
         )
 
 @test
@@ -166,7 +166,7 @@ def spawning_non_existent_command_raises_specific_no_such_command_exception(shel
         # Expected exception
         assert False
     except spur.NoSuchCommandError as error:
-        assert_equal("No such command: bin/i-am-not-a-command", error.message)
+        assert_equal("No such command: bin/i-am-not-a-command", error.args[0])
         assert_equal("bin/i-am-not-a-command", error.command)
 
 
@@ -181,7 +181,7 @@ def spawning_command_that_uses_path_env_variable_asks_if_command_is_installed(sh
             "Command not found: i-am-not-a-command." +
             " Check that i-am-not-a-command is installed and on $PATH"
         )
-        assert_equal(expected_message, error.message)
+        assert_equal(expected_message, error.args[0])
         assert_equal("i-am-not-a-command", error.command)
 
 

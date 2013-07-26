@@ -139,7 +139,7 @@ env_variable = shell.env['HOME']
 To set environmental variables, use:
 
 ```python
-result = shell.env.setenvariable(name, value)
+result = shell.env.setenv(name, value)
 ```
 
 ## Process interface

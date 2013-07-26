@@ -11,6 +11,7 @@ import paramiko
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
+from spur.environment import EnvironmentalVariables
 import spur.results
 from .io import IoHandler
 from .errors import NoSuchCommandError
@@ -170,6 +171,10 @@ class SshShell(object):
     @property
     def files(self):
         return FileOperations(self)
+
+    @property
+    def env(self):
+        return EnvironmentalVariables(self).env
     
     def _get_ssh_transport(self):
         try:

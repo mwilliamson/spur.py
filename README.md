@@ -132,15 +132,15 @@ To get environmental variables already set on the remote machine, use:
 env_variable = shell.env[{ENVIRONMENTAL_VARIABLE}]
 
 
-'''python
+```python
 env_variable = shell.env['HOME']
-'''
+```
 
 To set environmental variables, use:
 
-'''python
+```python
 result = shell.env.setenvariable(name, value)
-'''
+```
 
 ## Process interface
 

@@ -54,7 +54,6 @@ class LocalShell(object):
                 stdin=stdin_arg,
                 stdout=stdout_arg,
                 stderr=stderr_arg,
-                bufsize=1,
                 **self._subprocess_args(command, *args, **kwargs)
             )
             

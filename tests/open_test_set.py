@@ -23,7 +23,7 @@ def can_write_to_files_opened_by_open(shell):
     try:
         f.write("hello")
         f.flush()
-        assert_equal("hello", shell.run(["cat", path]).output)
+        assert_equal(b"hello", shell.run(["cat", path]).output)
     finally:
         f.close()
         shell.run(["rm", path])

@@ -2,10 +2,8 @@ import os
 import subprocess
 import shutil
 import pty
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+io = __import__("io")
+BytesIO = io.BytesIO
 import threading
 
 from spur.tempdir import create_temporary_dir
@@ -56,6 +54,7 @@ class LocalShell(object):
                 stdin=stdin_arg,
                 stdout=stdout_arg,
                 stderr=stderr_arg,
+                bufsize=1,
                 **self._subprocess_args(command, *args, **kwargs)
             )
             
@@ -64,7 +63,7 @@ class LocalShell(object):
                 # garbage collection
                 process_stdin = os.fdopen(os.dup(master), "w")
                 process_stdout = os.fdopen(master)
-                process_stderr = StringIO()
+                process_stderr = BytesIO()
                 
                 def close_slave_on_exit():
                     process.wait()
@@ -135,6 +134,8 @@ class LocalProcess(object):
         
     def stdin_write(self, value):
         self._process_stdin.write(value)
+        # TODO: find a more elegant way of handling buffering that seems to be introduced in Python 3
+        self._process_stdin.flush()
         
     def send_signal(self, signal):
         self._subprocess.send_signal(signal)

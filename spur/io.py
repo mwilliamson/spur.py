@@ -45,5 +45,5 @@ class OutputHandler(object):
                     self._file_out.write(output)
                     output_buffer.append(output)
                 else:
-                    self._output = "".join(output_buffer)
+                    self._output = b"".join(output_buffer)
                     return

@@ -1,5 +1,10 @@
 # CHANGES
 
+## 0.3.6
+
+* LocalShell: Add support for Python 3. Since paramiko is currently unsupported
+  on Python 3, use the package "spur.local" rather than "spur".
+
 ## 0.3.5
 
 * SshShell: Use "command -v" instead of "which" for better POSIX compliance.

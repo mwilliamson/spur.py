@@ -1,3 +1,6 @@
 *.pyc
-_virtualenv
-spur.egg-info
+/_virtualenv
+/*.egg-info
+/README
+/MANIFEST
+/.tox

@@ -1,6 +1,7 @@
-from io import BytesIO
+import io
 import time
 import signal
+import sys
 
 from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_true
 
@@ -118,7 +119,7 @@ def can_tell_if_spawned_process_is_running(shell):
     
 @test
 def can_write_stdout_to_file_object_while_process_is_executing(shell):
-    output_file = BytesIO()
+    output_file = io.BytesIO()
     process = shell.spawn(
         ["sh", "-c", "echo hello; read dont_care;"],
         stdout=output_file
@@ -130,7 +131,7 @@ def can_write_stdout_to_file_object_while_process_is_executing(shell):
     
 @test
 def can_write_stderr_to_file_object_while_process_is_executing(shell):
-    output_file = BytesIO()
+    output_file = io.BytesIO()
     process = shell.spawn(
         ["sh", "-c", "echo hello 1>&2; read dont_care;"],
         stderr=output_file
@@ -216,7 +217,8 @@ def can_write_to_stdin_of_spawned_process_when_using_pty(shell):
     process.stdin_write("hello\n")
     result = process.wait_for_result()
     # Get the output twice since the pty echoes input
-    assert_equal("hello\r\nhello\r\n", result.output)
+    linesep = _pty_linesep()
+    assert_equal("hello{0}hello{0}".format(linesep), result.output)
 
 
 # TODO: timeouts in wait_for_result
@@ -233,3 +235,9 @@ def _wait_for_assertion(assertion):
             if time.time() - start > timeout:
                 raise
             time.sleep(period)
+
+def _pty_linesep():
+    if sys.version_info[0] == 2:
+        return "\r\n"
+    else:
+        return "\n"

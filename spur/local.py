@@ -3,7 +3,6 @@ import subprocess
 import shutil
 import pty
 io = __import__("io")
-BytesIO = io.BytesIO
 import threading
 
 from spur.tempdir import create_temporary_dir
@@ -54,7 +53,6 @@ class LocalShell(object):
                 stdin=stdin_arg,
                 stdout=stdout_arg,
                 stderr=stderr_arg,
-                bufsize=1,
                 **self._subprocess_args(command, *args, **kwargs)
             )
             
@@ -63,7 +61,7 @@ class LocalShell(object):
                 # garbage collection
                 process_stdin = os.fdopen(os.dup(master), "w")
                 process_stdout = os.fdopen(master)
-                process_stderr = BytesIO()
+                process_stderr = io.BytesIO()
                 
                 def close_slave_on_exit():
                     process.wait()

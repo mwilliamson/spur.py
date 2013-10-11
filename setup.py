@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='spur.local',
-    version='0.3.6',
+    version='0.3.7',
     description='Run commands and manipulate files locally',
     long_description=read("README"),
     author='Michael Williamson',

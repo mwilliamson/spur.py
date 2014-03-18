@@ -1,8 +1,12 @@
 # CHANGES
 
-## 0.3.7
+## 0.3.8
 
 * Add full support for Python 3.
+
+## 0.3.7
+
+* Handle buffering more consistently across different Python versions.
 
 ## 0.3.6
 

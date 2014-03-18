@@ -8,11 +8,23 @@ def read(fname):
 
 setup(
     name='spur.local',
-    version='0.3.7',
+    version='0.3.8',
     description='Run commands and manipulate files locally',
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/spur.py',
     keywords="shell subprocess process",
     packages=['spur'],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+    ],
 )

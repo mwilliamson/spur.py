@@ -60,8 +60,8 @@ class LocalShell(object):
             if use_pty:
                 # TODO: Should close master ourselves rather than relying on
                 # garbage collection
-                process_stdin = os.fdopen(os.dup(master), "w")
-                process_stdout = os.fdopen(master)
+                process_stdin = os.fdopen(os.dup(master), "wb", 0)
+                process_stdout = os.fdopen(master, "rb", 0)
                 process_stderr = io.BytesIO()
                 
                 def close_slave_on_exit():

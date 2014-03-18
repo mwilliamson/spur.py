@@ -201,24 +201,23 @@ def command_can_be_explicitly_run_with_pseudo_terminal(shell):
 @test
 def output_is_captured_when_using_pty(shell):
     result = shell.run(["echo", "-n", "hello"], use_pty=True)
-    assert_equal("hello", result.output)
+    assert_equal(b"hello", result.output)
     
 
 @test
 def stderr_is_redirected_stdout_when_using_pty(shell):
     result = shell.run(["sh", "-c", "echo -n hello 1>&2"], use_pty=True)
-    assert_equal("hello", result.output)
+    assert_equal(b"hello", result.output)
     assert_equal(b"", result.stderr_output)
     
 
 @test
 def can_write_to_stdin_of_spawned_process_when_using_pty(shell):
     process = shell.spawn(["sh", "-c", "read value; echo $value"], use_pty=True)
-    process.stdin_write("hello\n")
+    process.stdin_write(b"hello\n")
     result = process.wait_for_result()
     # Get the output twice since the pty echoes input
-    linesep = _pty_linesep()
-    assert_equal("hello{0}hello{0}".format(linesep), result.output)
+    assert_equal(b"hello\r\nhello\r\n", result.output)
 
 
 # TODO: timeouts in wait_for_result
@@ -235,9 +234,3 @@ def _wait_for_assertion(assertion):
             if time.time() - start > timeout:
                 raise
             time.sleep(period)
-
-def _pty_linesep():
-    if sys.version_info[0] == 2:
-        return "\r\n"
-    else:
-        return "\n"

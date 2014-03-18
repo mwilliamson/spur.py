@@ -6,6 +6,7 @@ import contextlib
 import uuid
 import socket
 import traceback
+import sys
 
 import paramiko
 
@@ -128,7 +129,7 @@ class SshShell(object):
         
         update_env_commands = [
             "export {0}={1}".format(key, escape_sh(value))
-            for key, value in update_env.iteritems()
+            for key, value in _iteritems(update_env)
         ]
         commands += update_env_commands
         commands.append("command -v {0} > /dev/null 2>&1 ; echo $?".format(escape_sh(command_args[0])))
@@ -290,3 +291,9 @@ class SshProcess(object):
             output,
             stderr_output
         )
+
+
+if sys.version_info[0] < 3:
+    _iteritems = lambda d: d.iteritems()
+else:
+    _iteritems = lambda d: d.items()

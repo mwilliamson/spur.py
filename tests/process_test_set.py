@@ -214,7 +214,7 @@ def stderr_is_redirected_stdout_when_using_pty(shell):
 @test
 def can_write_to_stdin_of_spawned_process_when_using_pty(shell):
     process = shell.spawn(["sh", "-c", "read value; echo $value"], use_pty=True)
-    process.stdin_write("hello\n")
+    process.stdin_write(b"hello\n")
     result = process.wait_for_result()
     # Get the output twice since the pty echoes input
     assert_equal(b"hello\r\nhello\r\n", result.output)

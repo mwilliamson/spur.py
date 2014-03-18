@@ -36,7 +36,7 @@ class OutputHandler(object):
                 # Attempting to read from a pty master that has received nothing
                 # seems to raise an IOError when reading
                 # See: http://bugs.python.org/issue5380
-                self._output = ""
+                self._output = b""
         else:
             output_buffer = []
             while True:

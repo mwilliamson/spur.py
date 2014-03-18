@@ -61,7 +61,7 @@ class LocalShell(object):
                 # TODO: Should close master ourselves rather than relying on
                 # garbage collection
                 process_stdin = os.fdopen(os.dup(master), "w")
-                process_stdout = os.fdopen(master)
+                process_stdout = os.fdopen(master, "rb")
                 process_stderr = io.BytesIO()
                 
                 def close_slave_on_exit():

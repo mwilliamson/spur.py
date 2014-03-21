@@ -125,6 +125,23 @@ Raises `spur.NoSuchCommandError` if trying to execute a non-existent command.
 
 Open the file at `path`. Returns a file-like object.
 
+## Environmental Variables on Remote Machine
+
+To get environmental variables already set on the remote machine, use:
+
+env_variable = shell.env[{ENVIRONMENTAL_VARIABLE}]
+
+
+```python
+env_variable = shell.env['HOME']
+```
+
+To set environmental variables, use:
+
+```python
+result = shell.env.setenv(name, value)
+```
+
 ## Process interface
 
 Returned by calls to `shell.spawn`. Has the following attributes:

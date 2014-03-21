@@ -7,6 +7,7 @@ import threading
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
+from spur.environment import EnvironmentalVariables
 import spur.results
 from .io import IoHandler
 from .errors import NoSuchCommandError
@@ -101,6 +102,10 @@ class LocalShell(object):
     @property
     def files(self):
         return FileOperations(self)
+
+    @property
+    def env(self):
+        return EnvironmentalVariables(self).env
     
     def _subprocess_args(self, command, cwd=None, update_env=None, new_process_group=False):
         kwargs = {

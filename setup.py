@@ -10,7 +10,7 @@ setup(
     name='spur.local',
     version='0.3.8',
     description='Run commands and manipulate files locally',
-    long_description=read("README"),
+    long_description=read("README.rst"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/spur.py',
     keywords="shell subprocess process",

@@ -10,7 +10,7 @@ setup(
     name='spur',
     version='0.3.8',
     description='Run commands and manipulate files locally or over SSH using the same interface',
-    long_description=read("README"),
+    long_description=read("README.rst"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/spur.py',
     keywords="ssh shell subprocess process",

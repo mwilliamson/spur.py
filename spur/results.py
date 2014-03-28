@@ -34,4 +34,4 @@ class RunProcessError(RuntimeError):
 
 
 def _decode(raw_bytes):
-    return raw_bytes.decode(locale.getdefaultlocale()[1])
+    return raw_bytes.decode(locale.getdefaultlocale()[1], "replace")

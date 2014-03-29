@@ -1,3 +1,5 @@
+# coding=utf8
+
 import io
 import time
 import signal
@@ -76,7 +78,18 @@ def exception_message_contains_return_code_and_all_output(shell):
         assert_true(False)
     except spur.RunProcessError as error:
         assert_equal(
-            "return code: 1\noutput: starting\n\nstderr output: failed!\n",
+            """return code: 1\noutput: b'starting\\n'\nstderr output: b'failed!\\n'""",
+            error.args[0]
+        )
+
+@test
+def exception_message_shows_unicode_bytes(shell):
+    try:
+        shell.run(["sh", "-c", _u("echo ‽; exit 1")])
+        assert_true(False)
+    except spur.RunProcessError as error:
+        assert_equal(
+            """return code: 1\noutput: b'\\xe2\\x80\\xbd\\n'\nstderr output: b''""",
             error.args[0]
         )
 
@@ -234,3 +247,9 @@ def _wait_for_assertion(assertion):
             if time.time() - start > timeout:
                 raise
             time.sleep(period)
+
+def _u(b):
+    if isinstance(b, bytes):
+        return b.decode("utf8")
+    else:
+        return b

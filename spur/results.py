@@ -26,12 +26,16 @@ class ExecutionResult(object):
 class RunProcessError(RuntimeError):
     def __init__(self, return_code, output, stderr_output):
         message = "return code: {0}\noutput: {1}\nstderr output: {2}".format(
-            return_code, _decode(output), _decode(stderr_output))
+            return_code, _bytes_repr(output), _bytes_repr(stderr_output))
         super(type(self), self).__init__(message)
         self.return_code = return_code
         self.output = output
         self.stderr_output = stderr_output
 
 
-def _decode(raw_bytes):
-    return raw_bytes.decode(locale.getdefaultlocale()[1])
+def _bytes_repr(raw_bytes):
+    result =  repr(raw_bytes)
+    if result.startswith("b"):
+        return result
+    else:
+        return "b" + result

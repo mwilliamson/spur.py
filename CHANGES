@@ -1,5 +1,14 @@
 # CHANGES
 
+## 0.3.9
+
+* Treat output as bytes rather than attempting to decode to string when
+  generating RunProcessError.message. Fixes GitHub issue #13:
+
+    https://github.com/mwilliamson/spur.py/pull/13
+
+* Support unicode commands over SSH.
+
 ## 0.3.8
 
 * Add full support for Python 3.

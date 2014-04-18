@@ -1,5 +1,11 @@
 # CHANGES
 
+## 0.3.10
+
+* SshShell: Use "which" if "command -v" is not available. Fixes GitHub issue #15:
+
+    https://github.com/mwilliamson/spur.py/issues/15
+
 ## 0.3.9
 
 * Treat output as bytes rather than attempting to decode to string when

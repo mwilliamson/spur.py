@@ -42,19 +42,19 @@ class LocalShell(object):
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)
-        try:
-            if use_pty:
-                if pty is None:
-                    raise ValueError("use_pty is not supported when the pty module cannot be imported")
-                master, slave = pty.openpty()
-                stdin_arg = slave
-                stdout_arg = slave
-                stderr_arg = subprocess.STDOUT
-            else:
-                stdin_arg = subprocess.PIPE
-                stdout_arg = subprocess.PIPE
-                stderr_arg = subprocess.PIPE
+        if use_pty:
+            if pty is None:
+                raise ValueError("use_pty is not supported when the pty module cannot be imported")
+            master, slave = pty.openpty()
+            stdin_arg = slave
+            stdout_arg = slave
+            stderr_arg = subprocess.STDOUT
+        else:
+            stdin_arg = subprocess.PIPE
+            stdout_arg = subprocess.PIPE
+            stderr_arg = subprocess.PIPE
                 
+        try:
             process = subprocess.Popen(
                 stdin=stdin_arg,
                 stdout=stdout_arg,
@@ -62,28 +62,28 @@ class LocalShell(object):
                 bufsize=0,
                 **self._subprocess_args(command, *args, **kwargs)
             )
-            
-            if use_pty:
-                # TODO: Should close master ourselves rather than relying on
-                # garbage collection
-                process_stdin = os.fdopen(os.dup(master), "wb", 0)
-                process_stdout = os.fdopen(master, "rb", 0)
-                process_stderr = io.BytesIO()
-                
-                def close_slave_on_exit():
-                    process.wait()
-                    os.close(slave)
-                
-                thread = threading.Thread(target=close_slave_on_exit)
-                thread.daemon = True
-                thread.start()
-                
-            else:
-                process_stdin = process.stdin
-                process_stdout = process.stdout
-                process_stderr = process.stderr
         except OSError:
             raise NoSuchCommandError(command[0])
+            
+        if use_pty:
+            # TODO: Should close master ourselves rather than relying on
+            # garbage collection
+            process_stdin = os.fdopen(os.dup(master), "wb", 0)
+            process_stdout = os.fdopen(master, "rb", 0)
+            process_stderr = io.BytesIO()
+            
+            def close_slave_on_exit():
+                process.wait()
+                os.close(slave)
+            
+            thread = threading.Thread(target=close_slave_on_exit)
+            thread.daemon = True
+            thread.start()
+            
+        else:
+            process_stdin = process.stdin
+            process_stdout = process.stdout
+            process_stderr = process.stderr
             
         spur_process = LocalProcess(
             process,

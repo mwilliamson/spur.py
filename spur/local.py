@@ -1,9 +1,13 @@
 import os
 import subprocess
 import shutil
-import pty
 io = __import__("io")
 import threading
+
+try:
+    import pty
+except ImportError:
+    pty = None
 
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
@@ -40,6 +44,8 @@ class LocalShell(object):
         use_pty = kwargs.pop("use_pty", False)
         try:
             if use_pty:
+                if pty is None:
+                    raise ValueError("use_pty is not supported when the pty module cannot be imported")
                 master, slave = pty.openpty()
                 stdin_arg = slave
                 stdout_arg = slave

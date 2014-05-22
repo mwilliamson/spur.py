@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.11
+
+* Add support for platforms that don't support the pty module, such as Windows.
+
 ## 0.3.10
 
 * SshShell: Use "which" if "command -v" is not available. Fixes GitHub issue #15:

@@ -1,5 +1,24 @@
 # CHANGES
 
+## 0.3.11
+
+* Add support for platforms that don't support the pty module, such as Windows.
+
+## 0.3.10
+
+* SshShell: Use "which" if "command -v" is not available. Fixes GitHub issue #15:
+
+    https://github.com/mwilliamson/spur.py/issues/15
+
+## 0.3.9
+
+* Treat output as bytes rather than attempting to decode to string when
+  generating RunProcessError.message. Fixes GitHub issue #13:
+
+    https://github.com/mwilliamson/spur.py/pull/13
+
+* Support unicode commands over SSH.
+
 ## 0.3.8
 
 * Add full support for Python 3.

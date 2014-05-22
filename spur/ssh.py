@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import subprocess
 import os
 import os.path
@@ -132,7 +134,8 @@ class SshShell(object):
             for key, value in _iteritems(update_env)
         ]
         commands += update_env_commands
-        commands.append("command -v {0} > /dev/null 2>&1 ; echo $?".format(escape_sh(command_args[0])))
+        commands.append(" || ".join(self._generate_which_commands(command_args[0])))
+        commands.append("echo $?")
         
         command = " ".join(map(escape_sh, command_args))
         command = "exec {0}".format(command)
@@ -140,9 +143,17 @@ class SshShell(object):
             command = "setsid {0}".format(command)
             
         commands.append(command)
-        
         return "; ".join(commands)
-        
+    
+    def _generate_which_commands(self, command):
+        which_commands = ["command -v {0}", "which {0}"]
+        return (
+            self._generate_which_command(which, command)
+            for which in which_commands
+        )
+    
+    def _generate_which_command(self, which, command):
+        return which.format(escape_sh(command)) + " > /dev/null 2>&1"
     
     def upload_dir(self, local_dir, remote_dir, ignore):
         with create_temporary_dir() as temp_dir:

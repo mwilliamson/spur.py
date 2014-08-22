@@ -82,6 +82,24 @@ Optional arguments:
     warning
   - ``spur.ssh.MissingHostKey.accept`` -- accept the host key
 
+* ``shell_type`` -- the type of shell used by the host. Defaults to
+  ``spur.ssh.ShellTypes.sh``, which should be appropriate for most Linux
+  distributions. If the host uses a different shell, such as simpler shells
+  often found on embedded systems, try changing ``shell_type`` to a more
+  appropriate value, such as ``spur.ssh.ShellTypes.minimal``. The following
+  shell types are currently supported:
+  
+  - ``spur.ssh.ShellTypes.sh`` -- the Bourne shell. Supports all features.
+  
+  - ``spur.ssh.ShellTypes.minimal`` -- a minimal shell. Several features
+    are unsupported:
+    
+    - Non-existent commands will not raise ``spur.NoSuchCommandError``.
+    
+    - The following arguments to ``spawn`` and ``run`` are unsupported unless
+      set to their default values:
+      ``cwd``, ``update_env``, and ``store_pid``.
+
 Shell interface
 ---------------
 

@@ -282,3 +282,28 @@ If the ``ssh`` command succeeds, make sure that the arguments to
 ``ssh.SshShell`` and the ``ssh`` command are the same. If any of the
 arguments to ``ssh.SshShell`` are dynamically generated, try hard-coding
 them to make sure they're set to the values you expect.
+
+I can't spawn or run commands over SSH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're having trouble spawning or running commands over SSH, try passing
+``shell_type=spur.ssh.ShellTypes.minimal`` as an argument to ``spur.SshShell``.
+For instance:
+
+.. code-block:: python
+
+    import spur
+    import spur.ssh
+
+    spur.SshShell(
+        hostname="localhost",
+        username="bob",
+        password="password1",
+        shell_type=spur.ssh.ShellTypes.minimal,
+    )
+
+This makes minimal assumptions about the features that the host shell supports,
+and is especially well-suited to minimal shells found on embedded systems. If
+the host shell is more fully-featured but only works with
+``spur.ssh.ShellTypes.minimal``, feel free to submit an issue.
+

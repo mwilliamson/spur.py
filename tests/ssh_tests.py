@@ -147,5 +147,5 @@ class MinimalSshProcessTests(ProcessTestSet, MinimalSshTestMixin):
                 shell.run(["echo", "hello"], **kwargs)
             assert False, "Expected error"
         except spur.ssh.UnsupportedArgumentError as error:
-            assert_equal("'{}' is not supported when using a minimal shell".format(name), str(error))
+            assert_equal("'{0}' is not supported when using a minimal shell".format(name), str(error))
 

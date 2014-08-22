@@ -1,5 +1,11 @@
 # CHANGES
 
+## 0.3.12
+
+* Open files in text mode by default. When opening files over SSH, this means
+  that files are decoded using the encoding returned by
+  locale.getpreferredencoding().
+
 ## 0.3.11
 
 * Add support for platforms that don't support the pty module, such as Windows.

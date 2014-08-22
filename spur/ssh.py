@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import subprocess
 import os
@@ -9,6 +10,7 @@ import uuid
 import socket
 import traceback
 import sys
+import io
 
 import paramiko
 
@@ -177,8 +179,13 @@ class SshShell(object):
                 
     def open(self, name, mode="r"):
         sftp = self._open_sftp_client()
-        return SftpFile(sftp, sftp.open(name, mode))
-                
+        sftp_file = SftpFile(sftp, sftp.open(name, mode), mode)
+        
+        if "b" not in mode:
+            sftp_file = io.TextIOWrapper(sftp_file)
+        
+        return sftp_file
+    
     @property
     def files(self):
         return FileOperations(self)
@@ -236,20 +243,29 @@ def _read_int_line(output_file):
 
 
 class SftpFile(object):
-    def __init__(self, sftp, file):
+    def __init__(self, sftp, file, mode):
         self._sftp = sftp
         self._file = file
+        self._mode = mode
     
     def __getattr__(self, key):
-        if hasattr(self._file, key):
-            return getattr(self._file, key)
-        raise AttributeError
+        return getattr(self._file, key)
         
     def close(self):
         try:
             self._file.close()
         finally:
             self._sftp.close()
+    
+    def readable(self):
+        return "r" in self._mode or "+" in self._mode
+    
+    def writable(self):
+        return "w" in self._mode or "+" in self._mode or "a" in self._mode
+    
+    def seekable(self):
+        return True
+    
     
     def __enter__(self):
         return self

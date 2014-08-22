@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import uuid
 import functools
 
@@ -47,3 +49,10 @@ class OpenTestSet(object):
         shell.run(["sh", "-c", "echo hello > '{0}'".format(path)])
         with shell.open(path) as f:
             assert_equal("hello\n", f.read())
+            
+    @test
+    def files_can_be_opened_in_binary_mode(shell):
+        path = "/tmp/{0}".format(uuid.uuid4())
+        shell.run(["sh", "-c", "echo hello > '{0}'".format(path)])
+        with shell.open(path, "rb") as f:
+            assert_equal(b"hello\n", f.read())

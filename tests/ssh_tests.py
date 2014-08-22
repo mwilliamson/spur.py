@@ -1,4 +1,4 @@
-from nose.tools import istest, assert_raises
+from nose.tools import istest, assert_raises, assert_equal
 
 import spur
 import spur.ssh
@@ -87,3 +87,65 @@ def _create_shell_with_wrong_port():
         port=54321,
         missing_host_key=spur.ssh.MissingHostKey.accept,
     )
+
+
+class MinimalSshTestMixin(object):
+    def create_shell(self):
+        return create_ssh_shell(shell_type=spur.ssh.ShellTypes.minimal)
+    
+
+@istest
+class MinimalSshOpenTests(OpenTestSet, MinimalSshTestMixin):
+    pass
+
+
+@istest
+class MinimalSshProcessTests(ProcessTestSet, MinimalSshTestMixin):
+    spawning_command_that_uses_path_env_variable_asks_if_command_is_installed = None
+    spawning_non_existent_command_raises_specific_no_such_command_exception = None
+    
+    can_get_process_id_of_process_if_store_pid_is_true = None
+    can_send_signal_to_process_if_store_pid_is_set = None
+    
+    @istest
+    def cannot_store_pid(self):
+        self._assert_unsupported_feature(store_pid=True)
+    
+    cwd_of_run_can_be_set = None
+    
+    @istest
+    def cannot_set_cwd(self):
+        self._assert_unsupported_feature(cwd="/")
+    
+    environment_variables_can_be_added_for_run = None
+    
+    @istest
+    def update_env_can_be_empty(self):
+        self._assert_supported_feature(update_env={})
+        
+    @istest
+    def cannot_update_env(self):
+        self._assert_unsupported_feature(update_env={"x": "one"})
+        
+    @istest
+    def cannot_set_new_process_group(self):
+        self._assert_unsupported_feature(new_process_group=True)
+    
+    
+    def _assert_supported_feature(self, **kwargs):
+        with self.create_shell() as shell:
+            result = shell.run(["echo", "hello"], **kwargs)
+        
+        assert_equal(b"hello\n", result.output)
+    
+    
+    def _assert_unsupported_feature(self, **kwargs):
+        name, = kwargs.keys()
+        
+        try:
+            with self.create_shell() as shell:
+                shell.run(["echo", "hello"], **kwargs)
+            assert False, "Expected error"
+        except spur.ssh.UnsupportedArgumentError as error:
+            assert_equal("'{}' is not supported when using a minimal shell".format(name), str(error))
+

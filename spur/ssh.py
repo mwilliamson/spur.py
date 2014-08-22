@@ -28,6 +28,10 @@ class ConnectionError(Exception):
     pass
 
 
+class UnsupportedArgumentError(Exception):
+    pass
+
+
 class AcceptParamikoPolicy(paramiko.MissingHostKeyPolicy):
     def missing_host_key(self, client, hostname, key):
         return
@@ -40,88 +44,35 @@ class MissingHostKey(object):
     accept = AcceptParamikoPolicy()
 
 
-class SshShell(object):
-    def __init__(self,
-            hostname,
-            username=None,
-            password=None,
-            port=22,
-            private_key_file=None,
-            connect_timeout=None,
-            missing_host_key=None):
-        self._hostname = hostname
-        self._port = port
-        self._username = username
-        self._password = password
-        self._private_key_file = private_key_file
-        self._client = None
-        self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
-        self._closed = False
-        
-        if missing_host_key is None:
-            self._missing_host_key = MissingHostKey.raise_error
-        else:
-            self._missing_host_key = missing_host_key
-
-    def __enter__(self):
-        return self
-        
-    def __exit__(self, *args):
-        self._closed = True
-        if self._client is not None:
-            self._client.close()
-
-    def run(self, *args, **kwargs):
-        return self.spawn(*args, **kwargs).wait_for_result()
+class MinimalShellType(object):
+    supports_which = False
     
-    def spawn(self, command, *args, **kwargs):
-        stdout = kwargs.pop("stdout", None)
-        stderr = kwargs.pop("stderr", None)
-        allow_error = kwargs.pop("allow_error", False)
-        store_pid = kwargs.pop("store_pid", False)
-        use_pty = kwargs.pop("use_pty", False)
-        command_in_cwd = self._generate_run_command(command, *args, store_pid=store_pid, **kwargs)
-        try:
-            channel = self._get_ssh_transport().open_session()
-        except EOFError as error:
-            raise self._connection_error(error)
-        if use_pty:
-            channel.get_pty()
-        channel.exec_command(command_in_cwd)
-        
-        process_stdout = channel.makefile('rb')
+    def generate_run_command(self, command_args, store_pid,
+            cwd=None, update_env={}, new_process_group=False):
         
         if store_pid:
-            pid = _read_int_line(process_stdout)
-            
-        which_return_code = _read_int_line(process_stdout)
+            raise self._unsupported_argument_error("store_pid")
         
-        if which_return_code != 0:
-            raise NoSuchCommandError(command[0])
+        if cwd is not None:
+            raise self._unsupported_argument_error("cwd")
         
-        process = SshProcess(
-            channel,
-            allow_error=allow_error,
-            process_stdout=process_stdout,
-            stdout=stdout,
-            stderr=stderr,
-            shell=self,
-        )
-        if store_pid:
-            process.pid = pid
+        if update_env:
+            raise self._unsupported_argument_error("update_env")
         
-        return process
+        if new_process_group:
+            raise self._unsupported_argument_error("new_process_group")
+        
+        return " ".join(map(escape_sh, command_args))
+        
     
-    @contextlib.contextmanager
-    def temporary_dir(self):
-        result = self.run(["mktemp", "--directory"])
-        temp_dir = result.output.strip()
-        try:
-            yield temp_dir
-        finally:
-            self.run(["rm", "-rf", temp_dir])
+    def _unsupported_argument_error(self, name):
+        raise UnsupportedArgumentError("'{0}' is not supported when using a minimal shell".format(name))
+
+
+class ShShellType(object):
+    supports_which = True
     
-    def _generate_run_command(self, command_args, store_pid,
+    def generate_run_command(self, command_args, store_pid,
             cwd=None, update_env={}, new_process_group=False):
         commands = []
 
@@ -156,6 +107,101 @@ class SshShell(object):
     
     def _generate_which_command(self, which, command):
         return which.format(escape_sh(command)) + " > /dev/null 2>&1"
+
+
+class ShellTypes(object):
+    minimal = MinimalShellType()
+    sh = ShShellType()
+
+
+class SshShell(object):
+    def __init__(self,
+            hostname,
+            username=None,
+            password=None,
+            port=22,
+            private_key_file=None,
+            connect_timeout=None,
+            missing_host_key=None,
+            shell_type=None):
+        
+        if shell_type is None:
+            shell_type = ShellTypes.sh
+        
+        self._hostname = hostname
+        self._port = port
+        self._username = username
+        self._password = password
+        self._private_key_file = private_key_file
+        self._client = None
+        self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
+        self._closed = False
+        
+        if missing_host_key is None:
+            self._missing_host_key = MissingHostKey.raise_error
+        else:
+            self._missing_host_key = missing_host_key
+        
+        self._shell_type = shell_type
+
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *args):
+        self._closed = True
+        if self._client is not None:
+            self._client.close()
+
+    def run(self, *args, **kwargs):
+        return self.spawn(*args, **kwargs).wait_for_result()
+    
+    def spawn(self, command, *args, **kwargs):
+        stdout = kwargs.pop("stdout", None)
+        stderr = kwargs.pop("stderr", None)
+        allow_error = kwargs.pop("allow_error", False)
+        store_pid = kwargs.pop("store_pid", False)
+        use_pty = kwargs.pop("use_pty", False)
+        command_in_cwd = self._shell_type.generate_run_command(command, *args, store_pid=store_pid, **kwargs)
+        try:
+            channel = self._get_ssh_transport().open_session()
+        except EOFError as error:
+            raise self._connection_error(error)
+        if use_pty:
+            channel.get_pty()
+        channel.exec_command(command_in_cwd)
+        
+        process_stdout = channel.makefile('rb')
+        
+        if store_pid:
+            pid = _read_int_line(process_stdout)
+        
+        if self._shell_type.supports_which:
+            which_return_code = _read_int_line(process_stdout)
+            
+            if which_return_code != 0:
+                raise NoSuchCommandError(command[0])
+        
+        process = SshProcess(
+            channel,
+            allow_error=allow_error,
+            process_stdout=process_stdout,
+            stdout=stdout,
+            stderr=stderr,
+            shell=self,
+        )
+        if store_pid:
+            process.pid = pid
+        
+        return process
+    
+    @contextlib.contextmanager
+    def temporary_dir(self):
+        result = self.run(["mktemp", "--directory"])
+        temp_dir = result.output.strip()
+        try:
+            yield temp_dir
+        finally:
+            self.run(["rm", "-rf", temp_dir])
     
     def upload_dir(self, local_dir, remote_dir, ignore):
         with create_temporary_dir() as temp_dir:

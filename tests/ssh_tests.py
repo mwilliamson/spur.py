@@ -3,16 +3,23 @@ from nose.tools import istest, assert_raises
 import spur
 import spur.ssh
 from .testing import create_ssh_shell
-from . import open_test_set, process_test_set
+from .process_test_set import ProcessTestSet
+from .open_test_set import OpenTestSet
 
 
-def _run_ssh_test(test_func):
-    with create_ssh_shell() as shell:
-        test_func(shell)
-        
-        
-SshOpenTests = open_test_set.create("SshOpenTests", _run_ssh_test)
-SshProcessTests = process_test_set.create("SshProcessTests", _run_ssh_test)
+class SshTestMixin(object):
+    def create_shell(self):
+        return create_ssh_shell()
+    
+
+@istest
+class SshOpenTests(OpenTestSet, SshTestMixin):
+    pass
+
+
+@istest
+class SshProcessTests(ProcessTestSet, SshTestMixin):
+    pass
 
 
 @istest

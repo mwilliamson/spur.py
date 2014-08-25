@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='spur',
-    version='0.3.11',
+    version='0.3.12',
     description='Run commands and manipulate files locally or over SSH using the same interface',
     long_description=read("README.rst"),
     author='Michael Williamson',

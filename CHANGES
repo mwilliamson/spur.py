@@ -2,6 +2,9 @@
 
 ## 0.3.12
 
+* Add shell_type argument to SshShell to allow better support for minimal
+  shells, such as those found on embedded systems.
+
 * Open files in text mode by default. When opening files over SSH, this means
   that files are decoded using the encoding returned by
   locale.getpreferredencoding().

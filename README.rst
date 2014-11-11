@@ -162,6 +162,15 @@ Open the file at ``path``. Returns a file-like object.
 By default, files are opened in text mode.
 Appending `"b"` to the mode will open the file in binary mode.
 
+For instance, to copy a binary file over SSH,
+assuming you already have an instance of `SshShell`:
+
+.. code-block:: python
+
+    with ssh_shell.open("/path/to/remote", "rb") as remote_file:
+        with open("/path/to/local", "wb") as local_file:
+            shutil.copyfileobj(remote_file, local_file)
+
 Process interface
 -----------------
 

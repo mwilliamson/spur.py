@@ -159,6 +159,9 @@ open(path, mode="r")
 
 Open the file at ``path``. Returns a file-like object.
 
+By default, files are opened in text mode.
+Appending `"b"` to the mode will open the file in binary mode.
+
 Process interface
 -----------------
 

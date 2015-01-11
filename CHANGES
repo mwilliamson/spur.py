@@ -1,5 +1,10 @@
 # CHANGES
 
+## 0.3.13
+
+* Add look_for_private_keys argument to SshShell to allow searching for private
+  keys to be disabled.
+
 ## 0.3.12
 
 * Add shell_type argument to SshShell to allow better support for minimal

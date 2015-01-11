@@ -123,7 +123,8 @@ class SshShell(object):
             private_key_file=None,
             connect_timeout=None,
             missing_host_key=None,
-            shell_type=None):
+            shell_type=None,
+            look_for_private_keys=True):
         
         if shell_type is None:
             shell_type = ShellTypes.sh
@@ -135,6 +136,7 @@ class SshShell(object):
         self._private_key_file = private_key_file
         self._client = None
         self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
+        self._look_for_private_keys = look_for_private_keys
         self._closed = False
         
         if missing_host_key is None:
@@ -255,6 +257,7 @@ class SshShell(object):
                 username=self._username,
                 password=self._password,
                 key_filename=self._private_key_file,
+                look_for_keys=self._look_for_private_keys,
                 timeout=self._connect_timeout
             )
             self._client = client

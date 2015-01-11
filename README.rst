@@ -100,6 +100,10 @@ Optional arguments:
       set to their default values:
       ``cwd``, ``update_env``, and ``store_pid``.
 
+* ``look_for_private_keys`` -- by default, Spur will search for discoverable
+  private key files in ``~/.ssh/``.
+  Set to ``False`` to disable this behaviour.
+
 Shell interface
 ---------------
 

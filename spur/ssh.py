@@ -66,7 +66,7 @@ class MinimalShellType(object):
         
     
     def _unsupported_argument_error(self, name):
-        raise UnsupportedArgumentError("'{0}' is not supported when using a minimal shell".format(name))
+        return UnsupportedArgumentError("'{0}' is not supported when using a minimal shell".format(name))
 
 
 class ShShellType(object):

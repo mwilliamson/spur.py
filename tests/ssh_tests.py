@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+
+import io
+
 from nose.tools import istest, assert_raises, assert_equal
 
 import spur
@@ -149,3 +153,18 @@ class MinimalSshProcessTests(ProcessTestSet, MinimalSshTestMixin):
         except spur.ssh.UnsupportedArgumentError as error:
             assert_equal("'{0}' is not supported when using a minimal shell".format(name), str(error))
 
+
+
+@istest
+class ReadInitializationLineTests(object):
+    @istest
+    def reading_initialization_line_returns_int_from_line_of_file(self):
+        assert_equal(42, spur.ssh._read_int_initialization_line(io.StringIO("42\n")))
+        
+    @istest
+    def blank_lines_are_skipped(self):
+        assert_equal(42, spur.ssh._read_int_initialization_line(io.StringIO("\n \n\t\t\n42\n")))
+        
+    @istest
+    def error_if_non_blank_line_is_not_integer(self):
+        assert_raises(ValueError, lambda: spur.ssh._read_int_initialization_line(io.StringIO("x\n")))

@@ -167,4 +167,8 @@ class ReadInitializationLineTests(object):
         
     @istest
     def error_if_non_blank_line_is_not_integer(self):
-        assert_raises(ValueError, lambda: spur.ssh._read_int_initialization_line(io.StringIO("x\n")))
+        try:
+            spur.ssh._read_int_initialization_line(io.StringIO("x\n"))
+            assert False, "Expected error"
+        except spur.CommandInitializationError as error:
+            assert "Failed to parse line 'x' as integer" in str(error)

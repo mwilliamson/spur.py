@@ -288,7 +288,10 @@ def _read_int_initialization_line(output_file):
     while True:
         line = output_file.readline().strip()
         if line:
-            return int(line)
+            try:
+                return int(line)
+            except ValueError:
+                raise spur.errors.CommandInitializationError(line)
 
 
 class SftpFile(object):

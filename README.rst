@@ -323,3 +323,15 @@ and is especially well-suited to minimal shells found on embedded systems. If
 the host shell is more fully-featured but only works with
 ``spur.ssh.ShellTypes.minimal``, feel free to submit an issue.
 
+Why don't shell features such as variables and redirection work?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Commands are run directly rather than through a shell.
+If you want to use any shell features such as variables and redirection,
+then you'll need to run those commands within an appropriate shell.
+For instance:
+
+.. code-block:: python
+
+    shell.run(["sh", "-c", "echo $PATH"])
+    shell.run(["sh", "-c", "ls | grep bananas"])

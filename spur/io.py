@@ -1,23 +1,27 @@
 import threading
+import os
 
 
 class IoHandler(object):
-    def __init__(self, in_out_pairs):
-        self._handlers = [
-            _output_handler(file_in, file_out)
-            for file_in, file_out
-            in in_out_pairs
-        ]
+    def __init__(self, channels):
+        self._handlers = list(map(_output_handler, channels))
         
     def wait(self):
         return [handler.wait() for handler in self._handlers]
 
 
-def _output_handler(file_in, file_out):
-    if file_out is None:
-        return _ReadOutputAtEnd(file_in)
+class Channel(object):
+    def __init__(self, file_in, file_out, is_pty=False):
+        self.file_in = file_in
+        self.file_out = file_out
+        self.is_pty = is_pty
+
+
+def _output_handler(channel):
+    if channel.file_out is None and not channel.is_pty:
+        return _ReadOutputAtEnd(channel.file_in)
     else:
-        return _ContinuousReader(file_in, file_out)
+        return _ContinuousReader(channel)
 
 
 class _ReadOutputAtEnd(object):
@@ -25,20 +29,14 @@ class _ReadOutputAtEnd(object):
         self._file_in = file_in
     
     def wait(self):
-        try:
-            return self._file_in.read()
-        except IOError:
-            # TODO: is there a more elegant fix?
-            # Attempting to read from a pty master that has received nothing
-            # seems to raise an IOError when reading
-            # See: http://bugs.python.org/issue5380
-            return b""
+        return self._file_in.read()
     
 
 class _ContinuousReader(object):
-    def __init__(self, file_in, file_out):
-        self._file_in = file_in
-        self._file_out = file_out
+    def __init__(self, channel):
+        self._file_in = channel.file_in
+        self._file_out = channel.file_out
+        self._is_pty = channel.is_pty
         self._output = b""
         
         self._thread = threading.Thread(target=self._capture_output)
@@ -52,9 +50,16 @@ class _ContinuousReader(object):
     def _capture_output(self):
         output_buffer = []
         while True:
-            output = self._file_in.read(1)
+            try:
+                output = self._file_in.read(1)
+            except IOError:
+                if self._is_pty:
+                    output = b""
+                else:
+                    raise
             if output:
-                self._file_out.write(output)
+                if self._file_out is not None:
+                    self._file_out.write(output)
                 output_buffer.append(output)
             else:
                 self._output = b"".join(output_buffer)

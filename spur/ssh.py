@@ -17,7 +17,7 @@ import paramiko
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
 import spur.results
-from .io import IoHandler
+from .io import IoHandler, Channel
 from .errors import NoSuchCommandError
 
 
@@ -341,8 +341,8 @@ class SshProcess(object):
         self._result = None
         
         self._io = IoHandler([
-            (self._stdout, stdout),
-            (self._stderr, stderr),
+            Channel(self._stdout, stdout),
+            Channel(self._stderr, stderr),
         ])
         
     def is_running(self):

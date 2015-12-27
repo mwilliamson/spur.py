@@ -14,7 +14,7 @@ except ImportError:
 from spur.tempdir import create_temporary_dir
 from spur.files import FileOperations
 import spur.results
-from .io import IoHandler
+from .io import IoHandler, Channel
 from .errors import NoSuchCommandError
 
 
@@ -79,6 +79,7 @@ class LocalShell(object):
             
             def close_slave_on_exit():
                 process.wait()
+                # TODO: ensure the IO handler has finished before closing
                 os.close(slave)
             
             thread = threading.Thread(target=close_slave_on_exit)
@@ -94,10 +95,10 @@ class LocalShell(object):
             process,
             allow_error=allow_error,
             process_stdin=process_stdin,
-            process_stdout=process_stdout,
-            process_stderr=process_stderr,
-            stdout=stdout,
-            stderr=stderr
+            channels=[
+                Channel(process_stdout, stdout, is_pty=use_pty),
+                Channel(process_stderr, stderr, is_pty=use_pty),
+            ]
         )
         if store_pid:
             spur_process.pid = process.pid
@@ -140,16 +141,13 @@ class LocalShell(object):
             
 
 class LocalProcess(object):
-    def __init__(self, subprocess, allow_error, process_stdin, process_stdout, process_stderr, stdout, stderr):
+    def __init__(self, subprocess, allow_error, process_stdin, channels):
         self._subprocess = subprocess
         self._allow_error = allow_error
         self._process_stdin = process_stdin
         self._result = None
             
-        self._io = IoHandler([
-            (process_stdout, stdout),
-            (process_stderr, stderr),
-        ])
+        self._io = IoHandler(channels)
         
     def is_running(self):
         return self._subprocess.poll() is None

@@ -1,8 +1,10 @@
 import os
+import sys
 import subprocess
 import shutil
 io = __import__("io")
 import threading
+import errno
 
 try:
     import pty
@@ -62,8 +64,11 @@ class LocalShell(object):
                 bufsize=0,
                 **self._subprocess_args(command, *args, **kwargs)
             )
-        except OSError:
-            raise NoSuchCommandError(command[0])
+        except OSError as error:
+            if self._is_no_such_command_oserror(error, command[0]):
+                raise NoSuchCommandError(command[0])
+            else:
+                raise
             
         if use_pty:
             # TODO: Should close master ourselves rather than relying on
@@ -97,7 +102,7 @@ class LocalShell(object):
         if store_pid:
             spur_process.pid = process.pid
         return spur_process
-        
+    
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()
         
@@ -120,7 +125,19 @@ class LocalShell(object):
         if new_process_group:
             kwargs["preexec_fn"] = os.setpgrp
         return kwargs
-        
+    
+    def _is_no_such_command_oserror(self, error, command):
+        if error.errno != errno.ENOENT:
+            return False
+        if sys.version_info[0] < 3:
+            return error.filename is None
+        else:
+            # In Python 3, filename and filename2 are None both when
+            # the command and cwd don't exist, but in both cases,
+            # the repr of the non-existent path is appended to the
+            # error message
+            return error.args[1] == os.strerror(error.errno) + ": " + repr(command)
+            
 
 class LocalProcess(object):
     def __init__(self, subprocess, allow_error, process_stdin, process_stdout, process_stderr, stdout, stderr):

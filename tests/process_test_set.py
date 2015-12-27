@@ -201,6 +201,17 @@ class ProcessTestSet(object):
             )
             assert_equal(expected_message, error.args[0])
             assert_equal("i-am-not-a-command", error.command)
+        
+        
+    @test
+    def using_non_existent_cwd_does_not_raise_no_such_command_error(shell):
+        cwd = "/some/path/that/hopefully/doesnt/exists/ljaslkfjaslkfjas"
+        try:
+            shell.spawn(["echo", "1"], cwd=cwd)
+            # Expected exception
+            assert False
+        except Exception as error:
+            assert not isinstance(error, spur.NoSuchCommandError)
 
 
     @test

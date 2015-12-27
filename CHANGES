@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.15
+
+* LocalShell: don't raise NoSuchComandError when cwd does not exist.
+
 ## 0.3.14
 
 * Raise spur.CommandInitializationError when SshShell fails to read integers

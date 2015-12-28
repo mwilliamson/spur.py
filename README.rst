@@ -9,7 +9,7 @@ To run echo locally:
 
     shell = spur.LocalShell()
     result = shell.run(["echo", "-n", "hello"])
-    print result.output # prints hello
+    print(result.output) # prints hello
 
 Executing the same command over SSH uses the same interface -- the only
 difference is how the shell is created:
@@ -21,7 +21,7 @@ difference is how the shell is created:
     shell = spur.SshShell(hostname="localhost", username="bob", password="password1")
     with shell:
         result = shell.run(["echo", "-n", "hello"])
-    print result.output # prints hello
+    print(result.output) # prints hello
 
 Installation
 ------------
@@ -116,7 +116,7 @@ a list of strings. Returns an instance of ``ExecutionResult``.
 .. code-block:: python
 
     result = shell.run(["echo", "-n", "hello"])
-    print result.output # prints hello
+    print(result.output) # prints hello
 
 Note that arguments are passed without any shell expansion. For
 instance, ``shell.run(["echo", "$PATH"])`` will print the literal string

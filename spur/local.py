@@ -1,8 +1,10 @@
+from __future__ import absolute_import
+
 import os
 import sys
 import subprocess
 import shutil
-io = __import__("io")
+import io
 import threading
 import errno
 

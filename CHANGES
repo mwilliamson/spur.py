@@ -2,6 +2,8 @@
 
 ## 0.3.15
 
+* Add encoding argument to spawn and run.
+
 * LocalShell: don't raise NoSuchCommandError when cwd does not exist.
 
 ## 0.3.14

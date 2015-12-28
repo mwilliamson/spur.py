@@ -3,8 +3,11 @@ import os
 
 
 class IoHandler(object):
-    def __init__(self, channels):
-        self._handlers = list(map(_output_handler, channels))
+    def __init__(self, channels, encoding):
+        self._handlers = [
+            _output_handler(channel, encoding)
+            for channel in channels
+        ]
         
     def wait(self):
         return [handler.wait() for handler in self._handlers]
@@ -17,7 +20,24 @@ class Channel(object):
         self.is_pty = is_pty
 
 
-def _output_handler(channel):
+def _output_handler(channel, encoding):
+    bytes_handler = _bytes_output_handler(channel)
+    if encoding is None:
+        return bytes_handler
+    else:
+        return _EncodedOutputHandler(bytes_handler, encoding)
+
+
+class _EncodedOutputHandler(object):
+    def __init__(self, bytes_handler, encoding):
+        self._bytes_handler = bytes_handler
+        self._encoding = encoding
+    
+    def wait(self):
+        return self._bytes_handler.wait().decode(self._encoding)
+
+
+def _bytes_output_handler(channel):
     if channel.file_out is None and not channel.is_pty:
         return _ReadOutputAtEnd(channel.file_in)
     else:

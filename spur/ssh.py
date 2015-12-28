@@ -163,6 +163,7 @@ class SshShell(object):
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)
+        encoding = kwargs.pop("encoding", None)
         command_in_cwd = self._shell_type.generate_run_command(command, *args, store_pid=store_pid, **kwargs)
         try:
             channel = self._get_ssh_transport().open_session()
@@ -189,6 +190,7 @@ class SshShell(object):
             process_stdout=process_stdout,
             stdout=stdout,
             stderr=stderr,
+            encoding=encoding,
             shell=self,
         )
         if store_pid:
@@ -331,7 +333,7 @@ def escape_sh(value):
 
 
 class SshProcess(object):
-    def __init__(self, channel, allow_error, process_stdout, stdout, stderr, shell):
+    def __init__(self, channel, allow_error, process_stdout, stdout, stderr, encoding, shell):
         self._channel = channel
         self._allow_error = allow_error
         self._stdin = channel.makefile('wb')
@@ -343,7 +345,7 @@ class SshProcess(object):
         self._io = IoHandler([
             Channel(self._stdout, stdout),
             Channel(self._stderr, stderr),
-        ])
+        ], encoding=encoding)
         
     def is_running(self):
         return not self._channel.exit_status_ready()

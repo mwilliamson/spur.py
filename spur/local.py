@@ -44,6 +44,7 @@ class LocalShell(object):
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)
+        encoding = kwargs.pop("encoding", None)
         if use_pty:
             if pty is None:
                 raise ValueError("use_pty is not supported when the pty module cannot be imported")
@@ -95,10 +96,10 @@ class LocalShell(object):
             process,
             allow_error=allow_error,
             process_stdin=process_stdin,
-            channels=[
+            io_handler=IoHandler([
                 Channel(process_stdout, stdout, is_pty=use_pty),
                 Channel(process_stderr, stderr, is_pty=use_pty),
-            ]
+            ], encoding=encoding)
         )
         if store_pid:
             spur_process.pid = process.pid
@@ -141,13 +142,13 @@ class LocalShell(object):
             
 
 class LocalProcess(object):
-    def __init__(self, subprocess, allow_error, process_stdin, channels):
+    def __init__(self, subprocess, allow_error, process_stdin, io_handler):
         self._subprocess = subprocess
         self._allow_error = allow_error
         self._process_stdin = process_stdin
         self._result = None
             
-        self._io = IoHandler(channels)
+        self._io = io_handler
         
     def is_running(self):
         return self._subprocess.poll() is None

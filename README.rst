@@ -107,8 +107,8 @@ Optional arguments:
 Shell interface
 ---------------
 
-run(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+run(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr, encoding)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run a command and wait for it to complete. The command is expected to be
 a list of strings. Returns an instance of ``ExecutionResult``.
@@ -145,12 +145,17 @@ Optional arguments:
 * ``stderr`` -- if not ``None``, anything the command prints to
   standard error during its execution will also be written to
   ``stderr`` using ``stderr.write``.
+* ``encoding`` -- if set, this is used to decode any output.
+  By default, any output is treated as raw bytes.
+  If set, the raw bytes are decoded before writing to
+  the passed ``stdout`` and ``stderr`` arguments (if set)
+  and before setting the output attributes on the result.
 
 ``shell.run(*args, **kwargs)`` should behave similarly to
 ``shell.spawn(*args, **kwargs).wait_for_result()``
 
-spawn(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+spawn(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr, encoding)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Behaves the same as ``run`` except that ``spawn`` immediately returns an
 object representing the running process.

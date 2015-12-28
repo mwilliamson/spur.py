@@ -46,6 +46,11 @@ class ProcessTestSet(object):
         assert_equal(b"hello\n", result.stderr_output)
         
     @test
+    def output_bytes_are_decoded_if_encoding_is_set(shell):
+        result = shell.run(["bash", "-c", r'echo -e "\u2603"'], encoding="utf8")
+        assert_equal(_u("☃\n"), result.output)
+        
+    @test
     def cwd_of_run_can_be_set(shell):
         result = shell.run(["pwd"], cwd="/")
         assert_equal(b"/\n", result.output)
@@ -83,6 +88,17 @@ class ProcessTestSet(object):
         except spur.RunProcessError as error:
             assert_equal(
                 """return code: 1\noutput: b'starting\\n'\nstderr output: b'failed!\\n'""",
+                error.args[0]
+            )
+
+    @test
+    def exception_message_contains_output_as_string_if_encoding_is_set(shell):
+        try:
+            shell.run(["sh", "-c", "echo starting; echo failed! 1>&2; exit 1"], encoding="ascii")
+            assert_true(False)
+        except spur.RunProcessError as error:
+            assert_equal(
+                """return code: 1\noutput:\nstarting\n\nstderr output:\nfailed!\n""",
                 error.args[0]
             )
 

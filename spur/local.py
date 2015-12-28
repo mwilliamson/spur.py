@@ -13,9 +13,9 @@ try:
 except ImportError:
     pty = None
 
-from spur.tempdir import create_temporary_dir
-from spur.files import FileOperations
-import spur.results
+from .tempdir import create_temporary_dir
+from .files import FileOperations
+from . import results
 from .io import IoHandler, Channel
 from .errors import NoSuchCommandError
 
@@ -171,7 +171,7 @@ class LocalProcess(object):
         output, stderr_output = self._io.wait()
         return_code = self._subprocess.wait()
         
-        return spur.results.result(
+        return results.result(
             return_code,
             self._allow_error,
             output,

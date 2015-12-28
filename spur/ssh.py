@@ -14,11 +14,11 @@ import io
 
 import paramiko
 
-from spur.tempdir import create_temporary_dir
-from spur.files import FileOperations
-import spur.results
+from .tempdir import create_temporary_dir
+from .files import FileOperations
+from . import results
 from .io import IoHandler, Channel
-from .errors import NoSuchCommandError
+from .errors import NoSuchCommandError, CommandInitializationError
 
 
 _ONE_MINUTE = 60
@@ -296,7 +296,7 @@ def _read_int_initialization_line(output_file):
             try:
                 return int(line)
             except ValueError:
-                raise spur.errors.CommandInitializationError(line)
+                raise CommandInitializationError(line)
 
 
 class SftpFile(object):
@@ -369,7 +369,7 @@ class SshProcess(object):
         output, stderr_output = self._io.wait()
         return_code = self._channel.recv_exit_status()
         
-        return spur.results.result(
+        return results.result(
             return_code,
             self._allow_error,
             output,

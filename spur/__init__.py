@@ -1,7 +1,7 @@
-from spur.local import LocalShell
-from spur.ssh import SshShell
-from spur.results import RunProcessError
-from spur.errors import NoSuchCommandError, CommandInitializationError
+from .local import LocalShell
+from .ssh import SshShell
+from .results import RunProcessError
+from .errors import NoSuchCommandError, CommandInitializationError
 
 __all__ = ["LocalShell", "SshShell", "RunProcessError", "NoSuchCommandError",
     "CommandInitializationError"]

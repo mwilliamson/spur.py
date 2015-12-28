@@ -103,6 +103,11 @@ Optional arguments:
 * ``look_for_private_keys`` -- by default, Spur will search for discoverable
   private key files in ``~/.ssh/``.
   Set to ``False`` to disable this behaviour.
+  
+* ``load_system_host_keys`` -- by default, Spur will attempt to read host keys
+  from the user's known hosts file, as used by OpenSSH, and no exception will
+  be raised if the file can’t be read.
+  Set to ``False`` to disable this behaviour.
 
 Shell interface
 ---------------

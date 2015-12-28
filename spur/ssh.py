@@ -124,7 +124,8 @@ class SshShell(object):
             connect_timeout=None,
             missing_host_key=None,
             shell_type=None,
-            look_for_private_keys=True):
+            look_for_private_keys=True,
+            load_system_host_keys=True):
         
         if shell_type is None:
             shell_type = ShellTypes.sh
@@ -137,6 +138,7 @@ class SshShell(object):
         self._client = None
         self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
         self._look_for_private_keys = look_for_private_keys
+        self._load_system_host_keys = load_system_host_keys
         self._closed = False
         
         if missing_host_key is None:
@@ -251,7 +253,8 @@ class SshShell(object):
             if self._closed:
                 raise RuntimeError("Shell is closed")
             client = paramiko.SSHClient()
-            client.load_system_host_keys()
+            if self._load_system_host_keys:
+                client.load_system_host_keys()
             client.set_missing_host_key_policy(self._missing_host_key)
             client.connect(
                 hostname=self._hostname,

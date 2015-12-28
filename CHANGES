@@ -4,6 +4,8 @@
 
 * Add encoding argument to spawn and run.
 
+* SshShell: add load_system_host_keys argument.
+
 * LocalShell: don't raise NoSuchCommandError when cwd does not exist.
 
 ## 0.3.14

@@ -71,7 +71,7 @@ class _ContinuousReader(object):
         output_buffer = StringIO()
         while True:
             try:
-                output = self._file_in.read(1)
+                output = self._file_in.read(4096)
             except IOError:
                 if self._is_pty:
                     output = b""

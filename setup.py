@@ -2,9 +2,10 @@
 
 import os
 from distutils.core import setup
+import io
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding='utf-8').read()
+    return io.open(os.path.join(os.path.dirname(__file__), fname), encoding='utf-8').read()
 
 setup(
     name='spur',

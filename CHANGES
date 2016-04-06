@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.16
+
+* Remove non-ASCII character from README.rst.
+
 ## 0.3.15
 
 * Add encoding argument to spawn and run.

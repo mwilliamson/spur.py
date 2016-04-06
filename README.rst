@@ -106,7 +106,7 @@ Optional arguments:
   
 * ``load_system_host_keys`` -- by default, Spur will attempt to read host keys
   from the user's known hosts file, as used by OpenSSH, and no exception will
-  be raised if the file can’t be read.
+  be raised if the file can't be read.
   Set to ``False`` to disable this behaviour.
 
 Shell interface

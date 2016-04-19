@@ -1,6 +1,6 @@
 import threading
 import os
-
+from StringIO import StringIO
 
 class IoHandler(object):
     def __init__(self, channels, encoding):
@@ -68,10 +68,10 @@ class _ContinuousReader(object):
         return self._output
     
     def _capture_output(self):
-        output_buffer = []
+        output_buffer = StringIO()
         while True:
             try:
-                output = self._file_in.read(1)
+                output = self._file_in.read(4096)
             except IOError:
                 if self._is_pty:
                     output = b""
@@ -80,7 +80,7 @@ class _ContinuousReader(object):
             if output:
                 if self._file_out is not None:
                     self._file_out.write(output)
-                output_buffer.append(output)
+                output_buffer.write(output)
             else:
-                self._output = b"".join(output_buffer)
+                self._output = output_buffer.getvalue()
                 return

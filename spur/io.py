@@ -1,5 +1,8 @@
+from __future__ import unicode_literals
+
 import threading
 import os
+import codecs
 
 
 class IoHandler(object):
@@ -21,27 +24,22 @@ class Channel(object):
 
 
 def _output_handler(channel, encoding):
-    bytes_handler = _bytes_output_handler(channel)
     if encoding is None:
-        return bytes_handler
+        file_in = channel.file_in
+        empty = b""
     else:
-        return _EncodedOutputHandler(bytes_handler, encoding)
-
-
-class _EncodedOutputHandler(object):
-    def __init__(self, bytes_handler, encoding):
-        self._bytes_handler = bytes_handler
-        self._encoding = encoding
+        file_in = codecs.getreader(encoding)(channel.file_in)
+        empty = ""
     
-    def wait(self):
-        return self._bytes_handler.wait().decode(self._encoding)
-
-
-def _bytes_output_handler(channel):
     if channel.file_out is None and not channel.is_pty:
-        return _ReadOutputAtEnd(channel.file_in)
+        return _ReadOutputAtEnd(file_in)
     else:
-        return _ContinuousReader(channel)
+        return _ContinuousReader(
+            file_in=file_in,
+            file_out=channel.file_out,
+            is_pty=channel.is_pty,
+            empty=empty,
+        )
 
 
 class _ReadOutputAtEnd(object):
@@ -53,11 +51,13 @@ class _ReadOutputAtEnd(object):
     
 
 class _ContinuousReader(object):
-    def __init__(self, channel):
-        self._file_in = channel.file_in
-        self._file_out = channel.file_out
-        self._is_pty = channel.is_pty
-        self._output = b""
+    def __init__(self, file_in, file_out, is_pty, empty):
+        self._file_in = file_in
+        self._file_out = file_out
+        self._is_pty = is_pty
+        self._empty = empty
+        
+        self._output = empty
         
         self._thread = threading.Thread(target=self._capture_output)
         self._thread.daemon = True
@@ -74,7 +74,7 @@ class _ContinuousReader(object):
                 output = self._file_in.read(1)
             except IOError:
                 if self._is_pty:
-                    output = b""
+                    output = self._empty
                 else:
                     raise
             if output:
@@ -82,5 +82,5 @@ class _ContinuousReader(object):
                     self._file_out.write(output)
                 output_buffer.append(output)
             else:
-                self._output = b"".join(output_buffer)
+                self._output = self._empty.join(output_buffer)
                 return

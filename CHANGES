@@ -1,5 +1,11 @@
 # CHANGES
 
+## 0.3.17
+
+* When encoding argument is set, decode output before writing to stdout and
+  stderr arguments. This changes the behaviour to match the documented
+  behaviour: previously, only the output on the result object was decoded.
+
 ## 0.3.16
 
 * Remove non-ASCII character from README.rst.

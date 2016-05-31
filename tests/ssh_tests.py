@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
 import io
+import socket
 
 from nose.tools import istest, assert_raises, assert_equal
+from paramiko.util import retry_on_signal
 
 import spur
 import spur.ssh
-from .testing import create_ssh_shell
+from .testing import create_ssh_shell, HOSTNAME, PORT, PASSWORD, USERNAME
 from .process_test_set import ProcessTestSet
 from .open_test_set import OpenTestSet
 
@@ -83,13 +85,24 @@ def trying_to_use_ssh_shell_after_exit_results_in_error():
     assert_raises(Exception, lambda: shell.run(["true"]))
 
 
-def _create_shell_with_wrong_port():
+@istest
+def passing_a_custom_socket_like_a_pre_connected_one():
+    sock = socket.socket(socket.AddressFamily.AF_INET, socket.SOCK_STREAM)
+    retry_on_signal(lambda: sock.connect((HOSTNAME, PORT)))
+
+    with _create_shell_with_wrong_port(sock=sock) as shell:
+        result = shell.run(["echo", "hello"])
+        assert_equal(b"hello\n", result.output)
+
+
+def _create_shell_with_wrong_port(**kwargs):
     return spur.SshShell(
-        username="bob",
-        password="password1",
-        hostname="localhost",
+        username=USERNAME,
+        password=PASSWORD,
+        hostname=HOSTNAME,
         port=54321,
         missing_host_key=spur.ssh.MissingHostKey.accept,
+        **kwargs
     )
 
 

@@ -109,6 +109,19 @@ Optional arguments:
   be raised if the file can't be read.
   Set to ``False`` to disable this behaviour.
 
+* ``sock`` -- an open socket or socket-like object (such as a ``paramiko.Channel``) to use
+  for communication to the target host. One could setup a proxy command using this:
+
+  .. code-block:: python
+
+      sock=paramiko.proxy.ProxyCommand("ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+                                       "{proxy_user}@{proxy_ip} nc -q0 {target_ip} 22")
+
+  For more information see:
+
+  * ``paramiko.Channel`` : http://docs.paramiko.org/en/latest/api/channel.html
+  * ``ProxyCommand`` support : http://docs.paramiko.org/en/latest/api/proxy.html
+
 Shell interface
 ---------------
 

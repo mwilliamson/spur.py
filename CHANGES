@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.18
+
+* Add sock argument to SshShell.
+
 ## 0.3.17
 
 * When encoding argument is set, decode output before writing to stdout and
@@ -96,7 +100,7 @@
 ## 0.3.0
 
 * Change default behaviour to raise an error when a host key is missing.
-* Allow selection of behaviour when a host key is missing by adding 
+* Allow selection of behaviour when a host key is missing by adding
   host_key_missing argument to SshShell constructor.
 
 ## 0.2.4

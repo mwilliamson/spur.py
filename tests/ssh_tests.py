@@ -86,7 +86,7 @@ def trying_to_use_ssh_shell_after_exit_results_in_error():
 
 
 @istest
-def passing_a_custom_socket_like_a_pre_connected_one():
+def an_open_socket_can_be_used_for_ssh_connection_with_sock_argument():
     sock = socket.socket(socket.AddressFamily.AF_INET, socket.SOCK_STREAM)
     retry_on_signal(lambda: sock.connect((HOSTNAME, PORT)))
 

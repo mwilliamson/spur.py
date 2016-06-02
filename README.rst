@@ -114,8 +114,10 @@ Optional arguments:
 
   .. code-block:: python
 
-      sock=paramiko.proxy.ProxyCommand("ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-                                       "{proxy_user}@{proxy_ip} nc -q0 {target_ip} 22")
+      sock=paramiko.proxy.ProxyCommand(
+          "ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+          "{proxy_user}@{proxy_ip} nc -q0 {target_ip} 22"
+      )
 
   For more information see:
 

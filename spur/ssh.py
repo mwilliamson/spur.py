@@ -125,7 +125,8 @@ class SshShell(object):
             missing_host_key=None,
             shell_type=None,
             look_for_private_keys=True,
-            load_system_host_keys=True):
+            load_system_host_keys=True,
+            sock=None):
         
         if shell_type is None:
             shell_type = ShellTypes.sh
@@ -140,7 +141,8 @@ class SshShell(object):
         self._look_for_private_keys = look_for_private_keys
         self._load_system_host_keys = load_system_host_keys
         self._closed = False
-        
+        self._sock = sock
+
         if missing_host_key is None:
             self._missing_host_key = MissingHostKey.raise_error
         else:
@@ -263,7 +265,8 @@ class SshShell(object):
                 password=self._password,
                 key_filename=self._private_key_file,
                 look_for_keys=self._look_for_private_keys,
-                timeout=self._connect_timeout
+                timeout=self._connect_timeout,
+                sock=self._sock
             )
             self._client = client
         return self._client

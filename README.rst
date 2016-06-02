@@ -109,20 +109,27 @@ Optional arguments:
   be raised if the file can't be read.
   Set to ``False`` to disable this behaviour.
 
-* ``sock`` -- an open socket or socket-like object (such as a ``paramiko.Channel``) to use
-  for communication to the target host. One could setup a proxy command using this:
+* ``sock`` -- an open socket or socket-like object to use for communication to
+  the target host. For instance:
 
   .. code-block:: python
 
       sock=paramiko.proxy.ProxyCommand(
           "ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-          "{proxy_user}@{proxy_ip} nc -q0 {target_ip} 22"
+          "bob@proxy.example.com nc -q0 target.example.com 22"
       )
 
-  For more information see:
+  Examples of socket-like objects include:
 
-  * ``paramiko.Channel`` : http://docs.paramiko.org/en/latest/api/channel.html
-  * ``ProxyCommand`` support : http://docs.paramiko.org/en/latest/api/proxy.html
+  * |paramiko.Channel|_
+  * |paramiko.proxy.ProxyCommand|_
+    (`unsupported in Python 3 <https://github.com/paramiko/paramiko/issues/673>`_ as of writing)
+
+.. |paramiko.Channel| replace:: ``paramiko.Channel``
+.. _paramiko.Channel: http://docs.paramiko.org/en/latest/api/channel.html
+
+.. |paramiko.proxy.ProxyCommand| replace:: ``paramiko.proxy.ProxyCommand``
+.. _paramiko.proxy.ProxyCommand: http://docs.paramiko.org/en/latest/api/proxy.html
 
 Shell interface
 ---------------

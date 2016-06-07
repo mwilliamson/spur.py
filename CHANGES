@@ -1,5 +1,22 @@
 # CHANGES
 
+## 0.3.19
+
+* Allow spur to be used with Paramiko 2. To quote the Paramiko changelog [1]:
+
+    Replace PyCrypto with the Python Cryptographic Authority (PyCA)
+    ‘Cryptography’ library suite. This improves security, installability, and
+    performance; adds PyPy support; and much more.
+
+  This should only affect installation requirements for Paramiko: see the
+  changelog for more information. Since the API of Paramiko remains unchanged,
+  spur should remain compatible with both Paramiko 1 and Paramiko 2.
+
+  Note that Python 3.2 is not compatible with Paramiko 2: you can continue to
+  use spur with Python 3.2 and Paramiko 1, although upgrading is recommended.
+
+[1]: http://www.paramiko.org/changelog.html#2.0.0
+
 ## 0.3.18
 
 * Add sock argument to SshShell.

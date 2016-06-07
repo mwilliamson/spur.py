@@ -16,7 +16,7 @@ setup(
     url='http://github.com/mwilliamson/spur.py',
     keywords="ssh shell subprocess process",
     packages=['spur'],
-    install_requires=["paramiko>=1.13.1,<2"],
+    install_requires=["paramiko>=1.13.1,<3"],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

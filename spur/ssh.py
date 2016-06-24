@@ -119,7 +119,7 @@ class SshShell(object):
             hostname,
             username=None,
             password=None,
-            port=22,
+            port=None,
             private_key_file=None,
             connect_timeout=None,
             missing_host_key=None,
@@ -128,6 +128,9 @@ class SshShell(object):
             load_system_host_keys=True,
             sock=None):
         
+        if port is None:
+            port = 22
+
         if shell_type is None:
             shell_type = ShellTypes.sh
         

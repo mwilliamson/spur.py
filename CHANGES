@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.20
+
+* SshShell: passing None as the port argument will cause port 22 to be used.
+
 ## 0.3.19
 
 * Allow spur to be used with Paramiko 2. To quote the Paramiko changelog [1]:

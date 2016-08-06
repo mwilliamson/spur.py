@@ -80,7 +80,14 @@ class ShShellType(object):
             commands.append("echo $$")
 
         if cwd is not None:
-            commands.append("cd {0}".format(escape_sh(cwd)))
+            # 1. Change directory before to check if the command exists
+            # (using command || which) because it might be in this
+            # directory:
+            # $ shell.run(["./foo"], cwd="/some/dir")
+            # 2. If we exit when this cd fails, we can't capture the which_return_code.
+            # To minimize the changes, we run cd again just before exec.
+            # Send stderr to /dev/null to capture only the second cd.
+            commands.append("cd {0} 2>/dev/null".format(escape_sh(cwd)))
         
         update_env_commands = [
             "export {0}={1}".format(key, escape_sh(value))
@@ -94,6 +101,9 @@ class ShShellType(object):
         command = "exec {0}".format(command)
         if new_process_group:
             command = "setsid {0}".format(command)
+        if cwd is not None:
+            # The command will only be executed if cd is successful.
+            command = "cd {0} && {1}".format(escape_sh(cwd), command)
             
         commands.append(command)
         return "; ".join(commands)

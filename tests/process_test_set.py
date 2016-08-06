@@ -1,5 +1,6 @@
 # coding=utf8
 
+import errno
 import io
 import time
 import signal
@@ -275,6 +276,26 @@ class ProcessTestSet(object):
         result = process.wait_for_result()
         # Get the output twice since the pty echoes input
         assert_equal(b"hello\r\nhello\r\n", result.output)
+
+    @test
+    def exception_is_raised_if_cwd_does_not_exist(shell):
+        try:
+            shell.run(["echo", "run"], cwd="/some/silly/path")
+            assert_true(False)
+        except spur.RunProcessError as error:
+            # SshShell
+            assert_true(b'No such file or directory' in error.stderr_output)
+        except (IOError, OSError) as e:
+            # LocalShell
+            # FileNotFoundError on Py3.3+ inherits from IOError
+            # OSError is raised on Python 2
+            # errno.ENOENT: No such file or directory
+            assert_equal(e.errno, errno.ENOENT)
+
+    @test
+    def can_find_command_in_cwd(shell):
+        result = shell.run(["./ls"], cwd="/bin")
+        assert_equal(result.return_code, 0)
 
 
 # TODO: timeouts in wait_for_result

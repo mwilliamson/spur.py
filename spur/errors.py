@@ -14,3 +14,11 @@ class CommandInitializationError(Exception):
 """Error while initializing command. The most likely cause is an unsupported shell. Try using a minimal shell type when calling 'spawn' or 'run'.
 (Failed to parse line '{0}' as integer)""".format(line)
         )
+
+
+class NoSuchDirectoryError(OSError):
+
+    def __init__(self, directory):
+        message = "No such directory: {0}".format(directory)
+        super(type(self), self).__init__(message)
+        self.directory = directory

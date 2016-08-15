@@ -17,7 +17,7 @@ from .tempdir import create_temporary_dir
 from .files import FileOperations
 from . import results
 from .io import IoHandler, Channel
-from .errors import NoSuchCommandError
+from .errors import NoSuchCommandError, NoSuchDirectoryError
 
 
 class LocalShell(object):
@@ -47,6 +47,7 @@ class LocalShell(object):
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)
         encoding = kwargs.pop("encoding", None)
+        cwd = kwargs.get("cwd")
         if use_pty:
             if pty is None:
                 raise ValueError("use_pty is not supported when the pty module cannot be imported")
@@ -68,7 +69,9 @@ class LocalShell(object):
                 **self._subprocess_args(command, *args, **kwargs)
             )
         except OSError as error:
-            if self._is_no_such_command_oserror(error, command[0]):
+            if cwd is not None and self._is_no_such_directory_oserror(error, cwd):
+                raise NoSuchDirectoryError(cwd)
+            elif self._is_no_such_command_oserror(error, command[0]):
                 raise NoSuchCommandError(command[0])
             else:
                 raise
@@ -141,7 +144,19 @@ class LocalShell(object):
             # the repr of the non-existent path is appended to the
             # error message
             return error.args[1] == os.strerror(error.errno) + ": " + repr(command)
-            
+
+    def _is_no_such_directory_oserror(self, error, directory):
+        if error.errno != errno.ENOENT:
+            return False
+        if sys.version_info[0] < 3:
+            return error.filename == directory
+        else:
+            # In Python 3, filename and filename2 are None both when
+            # the command and cwd don't exist, but in both cases,
+            # the repr of the non-existent path is appended to the
+            # error message
+            return error.args[1] == os.strerror(error.errno) + ": " + repr(directory)
+
 
 class LocalProcess(object):
     def __init__(self, subprocess, allow_error, process_stdin, io_handler):

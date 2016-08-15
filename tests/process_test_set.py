@@ -278,19 +278,33 @@ class ProcessTestSet(object):
         assert_equal(b"hello\r\nhello\r\n", result.output)
 
     @test
-    def exception_is_raised_if_cwd_does_not_exist(shell):
+    def using_non_existent_cwd_raises_no_such_directory_exception(shell):
+        cwd = "/some/silly/path"
         try:
-            shell.run(["echo", "run"], cwd="/some/silly/path")
-            assert_true(False)
-        except spur.RunProcessError as error:
-            # SshShell
-            assert_true(b'No such file or directory' in error.stderr_output)
-        except (IOError, OSError) as e:
-            # LocalShell
-            # FileNotFoundError on Py3.3+ inherits from IOError
-            # OSError is raised on Python 2
-            # errno.ENOENT: No such file or directory
-            assert_equal(e.errno, errno.ENOENT)
+            shell.spawn(["echo", "1"], cwd=cwd)
+            # Expected exception
+            assert False
+        except spur.NoSuchDirectoryError as error:
+            assert_equal("No such directory: {0}".format(cwd), error.args[0])
+            assert_equal(cwd, error.directory)
+
+    @test
+    def using_non_existent_cwd_and_command_raises_no_such_directory_exception(shell):
+        try:
+            shell.spawn(["bin/i-am-not-a-command"], cwd="/some/silly/path")
+            # Expected exception
+            assert False
+        except spur.NoSuchDirectoryError as error:
+            assert_equal("/some/silly/path", error.directory)
+
+    @test
+    def using_non_existent_command_and_correct_cwd_raises_no_such_command_exception(shell):
+        try:
+            shell.spawn(["bin/i-am-not-a-command"], cwd="/bin")
+            # Expected exception
+            assert False
+        except spur.NoSuchCommandError as error:
+            assert_equal("bin/i-am-not-a-command", error.command)
 
     @test
     def can_find_command_in_cwd(shell):

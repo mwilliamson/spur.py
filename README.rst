@@ -152,6 +152,9 @@ instance, ``shell.run(["echo", "$PATH"])`` will print the literal string
 Raises ``spur.NoSuchCommandError`` if trying to execute a non-existent
 command.
 
+Raises ``spur.NoSuchDirectoryError`` if trying to change to a non-existent
+directory.
+
 Optional arguments:
 
 * ``cwd`` -- change the current directory to this value before
@@ -189,6 +192,9 @@ object representing the running process.
 
 Raises ``spur.NoSuchCommandError`` if trying to execute a non-existent
 command.
+
+Raises ``spur.NoSuchDirectoryError`` if trying to change to a non-existent
+directory.
 
 open(path, mode="r")
 ~~~~~~~~~~~~~~~~~~~~
@@ -271,6 +277,13 @@ NoSuchCommandError
 ``NoSuchCommandError`` has the following properties:
 
 * ``command`` -- the command that could not be found
+
+NoSuchDirectoryError
+~~~~~~~~~~~~~~~~~~~~
+
+``NoSuchDirectoryError`` has the following properties:
+
+* ``directory`` -- the directory that could not be found
 
 API stability
 -------------

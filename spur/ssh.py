@@ -18,7 +18,7 @@ from .tempdir import create_temporary_dir
 from .files import FileOperations
 from . import results
 from .io import IoHandler, Channel
-from .errors import NoSuchCommandError, CommandInitializationError
+from .errors import NoSuchCommandError, CommandInitializationError, NoSuchDirectoryError
 
 
 _ONE_MINUTE = 60
@@ -80,31 +80,23 @@ class ShShellType(object):
             commands.append("echo $$")
 
         if cwd is not None:
-            # 1. Change directory before to check if the command exists
-            # (using command || which) because it might be in this
-            # directory:
-            # $ shell.run(["./foo"], cwd="/some/dir")
-            # 2. If we exit when this cd fails, we can't capture the which_return_code.
-            # To minimize the changes, we run cd again just before exec.
-            # Send stderr to /dev/null to capture only the second cd.
-            commands.append("cd {0} 2>/dev/null".format(escape_sh(cwd)))
+            command = "cd {0} 2>/dev/null && echo 0;".format(escape_sh(cwd))
+            command = "{ " + command + " } || { echo $?; exit 1; }"
+            commands.append(command)
         
         update_env_commands = [
             "export {0}={1}".format(key, escape_sh(value))
             for key, value in _iteritems(update_env)
         ]
         commands += update_env_commands
-        commands.append(" || ".join(self._generate_which_commands(command_args[0])))
-        commands.append("echo $?")
+        which_commands = " || ".join(self._generate_which_commands(command_args[0]))
+        which_commands = "{ { " + which_commands + "; } && echo 0; } || { echo $?; exit 1; }"
+        commands.append(which_commands)
         
         command = " ".join(map(escape_sh, command_args))
         command = "exec {0}".format(command)
         if new_process_group:
             command = "setsid {0}".format(command)
-        if cwd is not None:
-            # The command will only be executed if cd is successful.
-            command = "cd {0} && {1}".format(escape_sh(cwd), command)
-            
         commands.append(command)
         return "; ".join(commands)
     
@@ -181,6 +173,7 @@ class SshShell(object):
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)
         encoding = kwargs.pop("encoding", None)
+        cwd = kwargs.get('cwd')
         command_in_cwd = self._shell_type.generate_run_command(command, *args, store_pid=store_pid, **kwargs)
         try:
             channel = self._get_ssh_transport().open_session()
@@ -194,7 +187,12 @@ class SshShell(object):
         
         if store_pid:
             pid = _read_int_initialization_line(process_stdout)
-        
+
+        if cwd is not None:
+            cd_return_code = _read_int_initialization_line(process_stdout)
+            if cd_return_code != 0:
+                raise NoSuchDirectoryError(cwd)
+
         if self._shell_type.supports_which:
             which_return_code = _read_int_initialization_line(process_stdout)
             

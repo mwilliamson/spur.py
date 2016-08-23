@@ -279,6 +279,8 @@ class ProcessTestSet(object):
 
     @test
     def using_non_existent_cwd_raises_no_such_directory_exception(shell):
+        # TODO: this introduces inconsistent behaviour for other failures to
+        # change directory, such as permissions
         cwd = "/some/silly/path"
         try:
             shell.spawn(["echo", "1"], cwd=cwd)
@@ -308,6 +310,11 @@ class ProcessTestSet(object):
 
     @test
     def can_find_command_in_cwd(shell):
+        # TODO: the behaviour in subprocess seems to be inconsistent between
+        # both Python versions and platforms (Windows vs Unix)
+        # See:
+        # * https://bugs.python.org/issue15533
+        # * https://bugs.python.org/issue20927
         result = shell.run(["./ls"], cwd="/bin")
         assert_equal(result.return_code, 0)
 

@@ -1,5 +1,6 @@
 # coding=utf8
 
+import errno
 import io
 import time
 import signal
@@ -275,6 +276,40 @@ class ProcessTestSet(object):
         result = process.wait_for_result()
         # Get the output twice since the pty echoes input
         assert_equal(b"hello\r\nhello\r\n", result.output)
+
+    @test
+    def using_non_existent_cwd_raises_no_such_directory_exception(shell):
+        cwd = "/some/silly/path"
+        try:
+            shell.spawn(["echo", "1"], cwd=cwd)
+            # Expected exception
+            assert False
+        except spur.NoSuchDirectoryError as error:
+            assert_equal("No such directory: {0}".format(cwd), error.args[0])
+            assert_equal(cwd, error.directory)
+
+    @test
+    def using_non_existent_cwd_and_command_raises_no_such_directory_exception(shell):
+        try:
+            shell.spawn(["bin/i-am-not-a-command"], cwd="/some/silly/path")
+            # Expected exception
+            assert False
+        except spur.NoSuchDirectoryError as error:
+            assert_equal("/some/silly/path", error.directory)
+
+    @test
+    def using_non_existent_command_and_correct_cwd_raises_no_such_command_exception(shell):
+        try:
+            shell.spawn(["bin/i-am-not-a-command"], cwd="/bin")
+            # Expected exception
+            assert False
+        except spur.NoSuchCommandError as error:
+            assert_equal("bin/i-am-not-a-command", error.command)
+
+    @test
+    def can_find_command_in_cwd(shell):
+        result = shell.run(["./ls"], cwd="/bin")
+        assert_equal(result.return_code, 0)
 
 
 # TODO: timeouts in wait_for_result

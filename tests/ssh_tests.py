@@ -123,6 +123,12 @@ class MinimalSshProcessTests(ProcessTestSet, MinimalSshTestMixin):
     
     can_get_process_id_of_process_if_store_pid_is_true = None
     can_send_signal_to_process_if_store_pid_is_set = None
+
+    # cwd is not supported when using a minimal shell
+    using_non_existent_cwd_raises_no_such_directory_exception = None
+    using_non_existent_cwd_and_command_raises_no_such_directory_exception = None
+    using_non_existent_command_and_correct_cwd_raises_no_such_command_exception = None
+    can_find_command_in_cwd = None
     
     @istest
     def cannot_store_pid(self):

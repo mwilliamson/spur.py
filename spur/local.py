@@ -17,7 +17,7 @@ from .tempdir import create_temporary_dir
 from .files import FileOperations
 from . import results
 from .io import IoHandler, Channel
-from .errors import NoSuchCommandError, NoSuchDirectoryError
+from .errors import NoSuchCommandError, CouldNotChangeDirectoryError
 
 
 class LocalShell(object):
@@ -69,8 +69,8 @@ class LocalShell(object):
                 **self._subprocess_args(command, *args, **kwargs)
             )
         except OSError as error:
-            if cwd is not None and self._is_no_such_directory_oserror(error, cwd):
-                raise NoSuchDirectoryError(cwd)
+            if cwd is not None and self._is_cannot_change_directory_oserror(error, cwd):
+                raise CouldNotChangeDirectoryError(cwd, error)
             elif self._is_no_such_command_oserror(error, command[0]):
                 raise NoSuchCommandError(command[0])
             else:
@@ -136,7 +136,7 @@ class LocalShell(object):
     def _is_no_such_command_oserror(self, error, command):
         if error.errno != errno.ENOENT:
             return False
-        if sys.version_info[0] < 3:
+        elif sys.version_info[0] < 3:
             return error.filename is None
         else:
             # In Python 3, filename and filename2 are None both when
@@ -145,9 +145,7 @@ class LocalShell(object):
             # error message
             return error.args[1] == os.strerror(error.errno) + ": " + repr(command)
 
-    def _is_no_such_directory_oserror(self, error, directory):
-        if error.errno != errno.ENOENT:
-            return False
+    def _is_cannot_change_directory_oserror(self, error, directory):
         if sys.version_info[0] < 3:
             return error.filename == directory
         else:
@@ -155,7 +153,10 @@ class LocalShell(object):
             # the command and cwd don't exist, but in both cases,
             # the repr of the non-existent path is appended to the
             # error message
-            return error.args[1] == os.strerror(error.errno) + ": " + repr(directory)
+            return (
+                error.args[1] == os.strerror(error.errno) + ": " + repr(directory) or
+                not os.access(directory, os.X_OK)
+            )
 
 
 class LocalProcess(object):

@@ -18,7 +18,7 @@ from .tempdir import create_temporary_dir
 from .files import FileOperations
 from . import results
 from .io import IoHandler, Channel
-from .errors import NoSuchCommandError, CommandInitializationError, NoSuchDirectoryError
+from .errors import NoSuchCommandError, CommandInitializationError, CouldNotChangeDirectoryError
 
 
 _ONE_MINUTE = 60
@@ -80,10 +80,9 @@ class ShShellType(object):
             commands.append("echo $$")
 
         if cwd is not None:
-            command = "cd {0} 2>/dev/null && echo 0;".format(escape_sh(cwd))
-            command = "{ " + command + " } || { echo $?; exit 1; }"
-            commands.append(command)
-        
+            commands.append("cd {0} 2>&1 || {{ echo '\n'spur-cd: $?; exit 1; }}".format(escape_sh(cwd)))
+            commands.append("echo '\n'spur-cd: 0")
+
         update_env_commands = [
             "export {0}={1}".format(key, escape_sh(value))
             for key, value in _iteritems(update_env)
@@ -189,9 +188,16 @@ class SshShell(object):
             pid = _read_int_initialization_line(process_stdout)
 
         if cwd is not None:
-            cd_return_code = _read_int_initialization_line(process_stdout)
-            if cd_return_code != 0:
-                raise NoSuchDirectoryError(cwd)
+            cd_output = []
+            while True:
+                line = process_stdout.readline()
+                if line.startswith(b"spur-cd: "):
+                    if line.strip() == b"spur-cd: 0":
+                        break
+                    else:
+                        raise CouldNotChangeDirectoryError(cwd, b"".join(cd_output))
+                else:
+                    cd_output.append(line)
 
         if self._shell_type.supports_which:
             which_return_code = _read_int_initialization_line(process_stdout)
@@ -215,7 +221,7 @@ class SshShell(object):
     
     @contextlib.contextmanager
     def temporary_dir(self):
-        result = self.run(["mktemp", "--directory"])
+        result = self.run(["mktemp", "--directory"], encoding="ascii")
         temp_dir = result.output.strip()
         try:
             yield temp_dir

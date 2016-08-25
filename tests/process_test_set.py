@@ -5,6 +5,7 @@ import io
 import time
 import signal
 import functools
+import posixpath
 
 from nose.tools import istest, nottest, assert_equal, assert_not_equal, assert_raises, assert_true
 
@@ -278,25 +279,36 @@ class ProcessTestSet(object):
         assert_equal(b"hello\r\nhello\r\n", result.output)
 
     @test
-    def using_non_existent_cwd_raises_no_such_directory_exception(shell):
-        # TODO: this introduces inconsistent behaviour for other failures to
-        # change directory, such as permissions
+    def using_non_existent_cwd_raises_could_not_change_directory_error(shell):
         cwd = "/some/silly/path"
         try:
             shell.spawn(["echo", "1"], cwd=cwd)
             # Expected exception
             assert False
-        except spur.NoSuchDirectoryError as error:
-            assert_equal("No such directory: {0}".format(cwd), error.args[0])
+        except spur.CouldNotChangeDirectoryError as error:
+            assert_equal("Could not change directory to: {0}".format(cwd), error.args[0].split("\n")[0])
             assert_equal(cwd, error.directory)
 
     @test
-    def using_non_existent_cwd_and_command_raises_no_such_directory_exception(shell):
+    def attempting_to_change_directory_without_permissions_raises_cannot_change_directory_error(shell):
+        with shell.temporary_dir() as temp_dir:
+            dir_without_execute_permissions = posixpath.join(temp_dir, "a")
+            shell.run(["mkdir", dir_without_execute_permissions])
+            shell.run(["chmod", "-x", dir_without_execute_permissions])
+            try:
+                shell.spawn(["true"], cwd=dir_without_execute_permissions)
+                # Expected exception
+                assert False
+            except spur.CouldNotChangeDirectoryError as error:
+                assert_equal(dir_without_execute_permissions, error.directory)
+
+    @test
+    def using_non_existent_cwd_and_command_raises_could_not_change_directory_error(shell):
         try:
             shell.spawn(["bin/i-am-not-a-command"], cwd="/some/silly/path")
             # Expected exception
             assert False
-        except spur.NoSuchDirectoryError as error:
+        except spur.CouldNotChangeDirectoryError as error:
             assert_equal("/some/silly/path", error.directory)
 
     @test

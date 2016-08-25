@@ -4,7 +4,7 @@
 
 * SshShell: passing None as the port argument will cause port 22 to be used.
 
-* Raise NoSuchDirectoryError when failing to change directory to the cwd
+* Raise CouldNotChangeDirectoryError when failing to change directory to the cwd
   argument.
 
 ## 0.3.19

@@ -16,9 +16,11 @@ class CommandInitializationError(Exception):
         )
 
 
-class NoSuchDirectoryError(OSError):
-
-    def __init__(self, directory):
-        message = "No such directory: {0}".format(directory)
+class CouldNotChangeDirectoryError(OSError):
+    def __init__(self, directory, original_error):
+        message = (
+            "Could not change directory to: {0}\n".format(directory) +
+            "Original error: {0}".format(original_error)
+        )
         super(type(self), self).__init__(message)
         self.directory = directory

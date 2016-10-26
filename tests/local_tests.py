@@ -1,12 +1,21 @@
 import spur
 
-from . import open_test_set, process_test_set
+from nose.tools import istest
+
+from .process_test_set import ProcessTestSet
+from .open_test_set import OpenTestSet
 
 
-def _run_local_test(test_func):
-    with spur.LocalShell() as shell:
-        test_func(shell)
+class LocalTestMixin(object):
+    def create_shell(self):
+        return spur.LocalShell()
+    
+
+@istest
+class LocalOpenTests(OpenTestSet, LocalTestMixin):
+    pass
 
 
-LocalOpenTests = open_test_set.create("LocalOpenTests", _run_local_test)
-LocalProcessTests = process_test_set.create("LocalProcessTests", _run_local_test)
+@istest
+class LocalProcessTests(ProcessTestSet, LocalTestMixin):
+    pass

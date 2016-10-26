@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
 import os
-from distutils.core import setup
+from setuptools import setup
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name='spur.local',
-    version='0.3.11',
+    version='0.3.19',
     description='Run commands and manipulate files locally',
     long_description=read("README.rst"),
     author='Michael Williamson',
+    author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/spur.py',
     keywords="shell subprocess process",
     packages=['spur'],
@@ -27,5 +28,6 @@ setup(
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
 )

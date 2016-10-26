@@ -1,5 +1,63 @@
 # CHANGES
 
+## 0.3.19
+
+* Allow spur to be used with Paramiko 2. To quote the Paramiko changelog [1]:
+
+    Replace PyCrypto with the Python Cryptographic Authority (PyCA)
+    ‘Cryptography’ library suite. This improves security, installability, and
+    performance; adds PyPy support; and much more.
+
+  This should only affect installation requirements for Paramiko: see the
+  changelog for more information. Since the API of Paramiko remains unchanged,
+  spur should remain compatible with both Paramiko 1 and Paramiko 2.
+
+  Note that Python 3.2 is not compatible with Paramiko 2: you can continue to
+  use spur with Python 3.2 and Paramiko 1, although upgrading is recommended.
+
+[1]: http://www.paramiko.org/changelog.html#2.0.0
+
+## 0.3.18
+
+* Add sock argument to SshShell.
+
+## 0.3.17
+
+* When encoding argument is set, decode output before writing to stdout and
+  stderr arguments. This changes the behaviour to match the documented
+  behaviour: previously, only the output on the result object was decoded.
+
+## 0.3.16
+
+* Remove non-ASCII character from README.rst.
+
+## 0.3.15
+
+* Add encoding argument to spawn and run.
+
+* SshShell: add load_system_host_keys argument.
+
+* LocalShell: don't raise NoSuchCommandError when cwd does not exist.
+
+## 0.3.14
+
+* Raise spur.CommandInitializationError when SshShell fails to read integers
+  from stdout before the command is actually run.
+
+## 0.3.13
+
+* Add look_for_private_keys argument to SshShell to allow searching for private
+  keys to be disabled.
+
+## 0.3.12
+
+* Add shell_type argument to SshShell to allow better support for minimal
+  shells, such as those found on embedded systems.
+
+* Open files in text mode by default. When opening files over SSH, this means
+  that files are decoded using the encoding returned by
+  locale.getpreferredencoding().
+
 ## 0.3.11
 
 * Add support for platforms that don't support the pty module, such as Windows.
@@ -59,7 +117,7 @@
 ## 0.3.0
 
 * Change default behaviour to raise an error when a host key is missing.
-* Allow selection of behaviour when a host key is missing by adding 
+* Allow selection of behaviour when a host key is missing by adding
   host_key_missing argument to SshShell constructor.
 
 ## 0.2.4

@@ -9,7 +9,7 @@ To run echo locally:
 
     shell = spur.LocalShell()
     result = shell.run(["echo", "-n", "hello"])
-    print result.output # prints hello
+    print(result.output) # prints hello
 
 Executing the same command over SSH uses the same interface -- the only
 difference is how the shell is created:
@@ -21,7 +21,7 @@ difference is how the shell is created:
     shell = spur.SshShell(hostname="localhost", username="bob", password="password1")
     with shell:
         result = shell.run(["echo", "-n", "hello"])
-    print result.output # prints hello
+    print(result.output) # prints hello
 
 Installation
 ------------
@@ -82,11 +82,60 @@ Optional arguments:
     warning
   - ``spur.ssh.MissingHostKey.accept`` -- accept the host key
 
+* ``shell_type`` -- the type of shell used by the host. Defaults to
+  ``spur.ssh.ShellTypes.sh``, which should be appropriate for most Linux
+  distributions. If the host uses a different shell, such as simpler shells
+  often found on embedded systems, try changing ``shell_type`` to a more
+  appropriate value, such as ``spur.ssh.ShellTypes.minimal``. The following
+  shell types are currently supported:
+  
+  - ``spur.ssh.ShellTypes.sh`` -- the Bourne shell. Supports all features.
+  
+  - ``spur.ssh.ShellTypes.minimal`` -- a minimal shell. Several features
+    are unsupported:
+    
+    - Non-existent commands will not raise ``spur.NoSuchCommandError``.
+    
+    - The following arguments to ``spawn`` and ``run`` are unsupported unless
+      set to their default values:
+      ``cwd``, ``update_env``, and ``store_pid``.
+
+* ``look_for_private_keys`` -- by default, Spur will search for discoverable
+  private key files in ``~/.ssh/``.
+  Set to ``False`` to disable this behaviour.
+  
+* ``load_system_host_keys`` -- by default, Spur will attempt to read host keys
+  from the user's known hosts file, as used by OpenSSH, and no exception will
+  be raised if the file can't be read.
+  Set to ``False`` to disable this behaviour.
+
+* ``sock`` -- an open socket or socket-like object to use for communication to
+  the target host. For instance:
+
+  .. code-block:: python
+
+      sock=paramiko.proxy.ProxyCommand(
+          "ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+          "bob@proxy.example.com nc -q0 target.example.com 22"
+      )
+
+  Examples of socket-like objects include:
+
+  * |paramiko.Channel|_
+  * |paramiko.proxy.ProxyCommand|_
+    (`unsupported in Python 3 <https://github.com/paramiko/paramiko/issues/673>`_ as of writing)
+
+.. |paramiko.Channel| replace:: ``paramiko.Channel``
+.. _paramiko.Channel: http://docs.paramiko.org/en/latest/api/channel.html
+
+.. |paramiko.proxy.ProxyCommand| replace:: ``paramiko.proxy.ProxyCommand``
+.. _paramiko.proxy.ProxyCommand: http://docs.paramiko.org/en/latest/api/proxy.html
+
 Shell interface
 ---------------
 
-run(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+run(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr, encoding)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run a command and wait for it to complete. The command is expected to be
 a list of strings. Returns an instance of ``ExecutionResult``.
@@ -94,7 +143,7 @@ a list of strings. Returns an instance of ``ExecutionResult``.
 .. code-block:: python
 
     result = shell.run(["echo", "-n", "hello"])
-    print result.output # prints hello
+    print(result.output) # prints hello
 
 Note that arguments are passed without any shell expansion. For
 instance, ``shell.run(["echo", "$PATH"])`` will print the literal string
@@ -123,12 +172,17 @@ Optional arguments:
 * ``stderr`` -- if not ``None``, anything the command prints to
   standard error during its execution will also be written to
   ``stderr`` using ``stderr.write``.
+* ``encoding`` -- if set, this is used to decode any output.
+  By default, any output is treated as raw bytes.
+  If set, the raw bytes are decoded before writing to
+  the passed ``stdout`` and ``stderr`` arguments (if set)
+  and before setting the output attributes on the result.
 
 ``shell.run(*args, **kwargs)`` should behave similarly to
 ``shell.spawn(*args, **kwargs).wait_for_result()``
 
-spawn(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+spawn(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr, encoding)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Behaves the same as ``run`` except that ``spawn`` immediately returns an
 object representing the running process.
@@ -140,6 +194,18 @@ open(path, mode="r")
 ~~~~~~~~~~~~~~~~~~~~
 
 Open the file at ``path``. Returns a file-like object.
+
+By default, files are opened in text mode.
+Appending `"b"` to the mode will open the file in binary mode.
+
+For instance, to copy a binary file over SSH,
+assuming you already have an instance of ``SshShell``:
+
+.. code-block:: python
+
+    with ssh_shell.open("/path/to/remote", "rb") as remote_file:
+        with open("/path/to/local", "wb") as local_file:
+            shutil.copyfileobj(remote_file, local_file)
 
 Process interface
 -----------------
@@ -264,3 +330,40 @@ If the ``ssh`` command succeeds, make sure that the arguments to
 ``ssh.SshShell`` and the ``ssh`` command are the same. If any of the
 arguments to ``ssh.SshShell`` are dynamically generated, try hard-coding
 them to make sure they're set to the values you expect.
+
+I can't spawn or run commands over SSH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're having trouble spawning or running commands over SSH, try passing
+``shell_type=spur.ssh.ShellTypes.minimal`` as an argument to ``spur.SshShell``.
+For instance:
+
+.. code-block:: python
+
+    import spur
+    import spur.ssh
+
+    spur.SshShell(
+        hostname="localhost",
+        username="bob",
+        password="password1",
+        shell_type=spur.ssh.ShellTypes.minimal,
+    )
+
+This makes minimal assumptions about the features that the host shell supports,
+and is especially well-suited to minimal shells found on embedded systems. If
+the host shell is more fully-featured but only works with
+``spur.ssh.ShellTypes.minimal``, feel free to submit an issue.
+
+Why don't shell features such as variables and redirection work?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Commands are run directly rather than through a shell.
+If you want to use any shell features such as variables and redirection,
+then you'll need to run those commands within an appropriate shell.
+For instance:
+
+.. code-block:: python
+
+    shell.run(["sh", "-c", "echo $PATH"])
+    shell.run(["sh", "-c", "ls | grep bananas"])

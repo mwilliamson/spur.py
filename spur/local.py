@@ -1,18 +1,22 @@
+from __future__ import absolute_import
+
 import os
+import sys
 import subprocess
 import shutil
-io = __import__("io")
+import io
 import threading
+import errno
 
 try:
     import pty
 except ImportError:
     pty = None
 
-from spur.tempdir import create_temporary_dir
-from spur.files import FileOperations
-import spur.results
-from .io import IoHandler
+from .tempdir import create_temporary_dir
+from .files import FileOperations
+from . import results
+from .io import IoHandler, Channel
 from .errors import NoSuchCommandError
 
 
@@ -42,6 +46,7 @@ class LocalShell(object):
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)
+        encoding = kwargs.pop("encoding", None)
         if use_pty:
             if pty is None:
                 raise ValueError("use_pty is not supported when the pty module cannot be imported")
@@ -62,8 +67,11 @@ class LocalShell(object):
                 bufsize=0,
                 **self._subprocess_args(command, *args, **kwargs)
             )
-        except OSError:
-            raise NoSuchCommandError(command[0])
+        except OSError as error:
+            if self._is_no_such_command_oserror(error, command[0]):
+                raise NoSuchCommandError(command[0])
+            else:
+                raise
             
         if use_pty:
             # TODO: Should close master ourselves rather than relying on
@@ -74,6 +82,7 @@ class LocalShell(object):
             
             def close_slave_on_exit():
                 process.wait()
+                # TODO: ensure the IO handler has finished before closing
                 os.close(slave)
             
             thread = threading.Thread(target=close_slave_on_exit)
@@ -89,15 +98,15 @@ class LocalShell(object):
             process,
             allow_error=allow_error,
             process_stdin=process_stdin,
-            process_stdout=process_stdout,
-            process_stderr=process_stderr,
-            stdout=stdout,
-            stderr=stderr
+            io_handler=IoHandler([
+                Channel(process_stdout, stdout, is_pty=use_pty),
+                Channel(process_stderr, stderr, is_pty=use_pty),
+            ], encoding=encoding)
         )
         if store_pid:
             spur_process.pid = process.pid
         return spur_process
-        
+    
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()
         
@@ -120,19 +129,28 @@ class LocalShell(object):
         if new_process_group:
             kwargs["preexec_fn"] = os.setpgrp
         return kwargs
-        
+    
+    def _is_no_such_command_oserror(self, error, command):
+        if error.errno != errno.ENOENT:
+            return False
+        if sys.version_info[0] < 3:
+            return error.filename is None
+        else:
+            # In Python 3, filename and filename2 are None both when
+            # the command and cwd don't exist, but in both cases,
+            # the repr of the non-existent path is appended to the
+            # error message
+            return error.args[1] == os.strerror(error.errno) + ": " + repr(command)
+            
 
 class LocalProcess(object):
-    def __init__(self, subprocess, allow_error, process_stdin, process_stdout, process_stderr, stdout, stderr):
+    def __init__(self, subprocess, allow_error, process_stdin, io_handler):
         self._subprocess = subprocess
         self._allow_error = allow_error
         self._process_stdin = process_stdin
         self._result = None
             
-        self._io = IoHandler([
-            (process_stdout, stdout),
-            (process_stderr, stderr),
-        ])
+        self._io = io_handler
         
     def is_running(self):
         return self._subprocess.poll() is None
@@ -153,7 +171,7 @@ class LocalProcess(object):
         output, stderr_output = self._io.wait()
         return_code = self._subprocess.wait()
         
-        return spur.results.result(
+        return results.result(
             return_code,
             self._allow_error,
             output,

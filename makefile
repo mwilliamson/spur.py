@@ -4,6 +4,7 @@ test:
 	sh -c '. _virtualenv/bin/activate; nosetests -m'\''^$$'\'' `find tests -name '\''*.py'\''`'
 	
 upload:
+	tox
 	python setup.py sdist bdist_wheel upload
 	make clean
 	

@@ -279,7 +279,7 @@ NoSuchCommandError
 * ``command`` -- the command that could not be found
 
 CouldNotChangeDirectoryError
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``CouldNotChangeDirectoryError`` has the following properties:
 

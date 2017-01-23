@@ -107,7 +107,7 @@ class ProcessTestSet(object):
     @test
     def exception_message_shows_unicode_bytes(shell):
         try:
-            shell.run(["sh", "-c", _u("echo ‽; exit 1")])
+            shell.run(["sh", "-c", _u("echo ‽; exit 1").encode("utf8")])
             assert_true(False)
         except spur.RunProcessError as error:
             assert_equal(

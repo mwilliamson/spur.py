@@ -236,7 +236,7 @@ class ProcessTestSet(object):
         
     @test
     def using_non_existent_cwd_does_not_raise_no_such_command_error(shell):
-        cwd = "/some/path/that/hopefully/doesnt/exists/ljaslkfjaslkfjas"
+        cwd = "/some/path/that/hopefully/doesn't/exists/ljaslkfjaslkfjas"
         try:
             shell.spawn(["echo", "1"], cwd=cwd)
             # Expected exception

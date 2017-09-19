@@ -69,6 +69,47 @@ class MinimalShellType(object):
         return UnsupportedArgumentError("'{0}' is not supported when using a minimal shell".format(name))
 
 
+class TcshShellType(object):
+    supports_which = True
+    
+    def generate_run_command(self, command_args, store_pid,
+            cwd=None, update_env={}, new_process_group=False):
+        commands = []
+
+        if store_pid:
+            commands.append("echo $$")
+
+        if cwd is not None:
+            commands.append("cd {0} |& cat || (( echo '\n'spur-cd: $?; exit 1; ))".format(escape_sh(cwd)))
+            commands.append("echo '\n'spur-cd: 0")
+
+        update_env_commands = [
+            "set {0}={1}".format(key, escape_sh(value))
+            for key, value in _iteritems(update_env)
+        ]
+        commands += update_env_commands
+        which_commands = " || ".join(self._generate_which_commands(command_args[0]))
+        which_commands = "( ( " + which_commands + "; ) && echo 0; ) || ( echo $?; exit 1; )"
+        commands.append(which_commands)
+        
+        command = " ".join(map(escape_sh, command_args))
+        command = "exec {0}".format(command)
+        if new_process_group:
+            command = "setsid {0}".format(command)
+        commands.append(command)
+        return "; ".join(commands)
+    
+    def _generate_which_commands(self, command):
+        which_commands = ["command -v {0}", "which {0}"]
+        return (
+            self._generate_which_command(which, command)
+            for which in which_commands
+        )
+    
+    def _generate_which_command(self, which, command):
+        return which.format(escape_sh(command)) + " >& /dev/null"
+
+
 class ShShellType(object):
     supports_which = True
     
@@ -105,13 +146,14 @@ class ShShellType(object):
             self._generate_which_command(which, command)
             for which in which_commands
         )
-    
+
     def _generate_which_command(self, which, command):
         return which.format(escape_sh(command)) + " > /dev/null 2>&1"
 
 
 class ShellTypes(object):
     minimal = MinimalShellType()
+    tcsh = TcshShellType()
     sh = ShShellType()
 
 
@@ -181,7 +223,7 @@ class SshShell(object):
         if use_pty:
             channel.get_pty()
         channel.exec_command(command_in_cwd)
-        
+
         process_stdout = channel.makefile('rb')
         
         if store_pid:
@@ -201,7 +243,7 @@ class SshShell(object):
 
         if self._shell_type.supports_which:
             which_return_code = _read_int_initialization_line(process_stdout)
-            
+
             if which_return_code != 0:
                 raise NoSuchCommandError(command[0])
         

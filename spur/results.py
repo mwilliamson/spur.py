@@ -9,22 +9,25 @@ def result(return_code, allow_error, output, stderr_output):
         return result
     else:
         raise result.to_error()
-        
+
 
 class ExecutionResult(object):
     def __init__(self, return_code, output, stderr_output):
         self.return_code = return_code
         self.output = output
         self.stderr_output = stderr_output
-        
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def to_error(self):
         return RunProcessError(
             self.return_code,
-            self.output, 
+            self.output,
             self.stderr_output
         )
-        
-        
+
+
 class RunProcessError(RuntimeError):
     def __init__(self, return_code, output, stderr_output):
         message = "return code: {0}\noutput:{1}\nstderr output:{2}".format(

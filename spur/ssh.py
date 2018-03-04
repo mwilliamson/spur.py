@@ -380,6 +380,13 @@ class SshProcess(object):
         self._shell.run(["kill", "-{0}".format(signal), str(self.pid)])
         
     def wait_for_result(self):
+        if sys.version_info[0] < 3:     # Python 2 only
+            # Allow rise of exceptions (e.g., SIGINT for Ctrl+c) that might
+            # cancel process execution.  Python 2 does not raise exceptions
+            # during blocking io, so we first wait for the process to finish and
+            # only then pull the result.
+            while self.is_running():
+                time.sleep(0.1)
         if self._result is None:
             self._result = self._generate_result()
             

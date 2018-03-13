@@ -218,7 +218,7 @@ class SshShell(object):
         )
         if store_pid:
             process.pid = pid
-        _child.register(self, process, cleanup)
+        _child.register(self, process, command, cleanup)
         
         return process
     

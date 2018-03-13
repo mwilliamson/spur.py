@@ -201,6 +201,9 @@ command.
 Raises ``spur.CouldNotChangeDirectoryError`` if changing the current directory
 to ``cwd`` failed.
 
+Exits the program when the process exits with an error code.
+
+
 open(path, mode="r")
 ~~~~~~~~~~~~~~~~~~~~
 

@@ -110,7 +110,7 @@ class LocalShell(object):
         )
         if store_pid:
             spur_process.pid = process.pid
-        _child.register(self, spur_process, cleanup)
+        _child.register(self, spur_process, command, cleanup)
         return spur_process
     
     def run(self, *args, **kwargs):

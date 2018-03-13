@@ -14,8 +14,39 @@ import traceback
 _CHILDREN = []
 
 
-def register(shell, process, cleanup):
+def _watchdog_thread(process, command):
+    stack_info = traceback.extract_stack()
+    def watchdog():
+        try:
+            process.wait_for_result()
+        except Exception as e:
+            if not process._is_killed:
+                _CLEANUP_LOCK.acquire()
+
+                print("While executing command %s" % command, file=sys.stderr)
+                print("Traceback (most recent call last):", file=sys.stderr)
+                msg = traceback.format_list(stack_info[:-1])
+                print("".join(msg), end="", file=sys.stderr)
+                exc_type, exc_value, tb = sys.exc_info()
+                info = traceback.extract_tb(tb)
+                msg = traceback.format_list(info)
+                print("".join(msg), end="", file=sys.stderr)
+                print("%s.%s: %s" % (
+                    exc_type.__module__, exc_type.__name__, exc_value),
+                      file=sys.stderr)
+
+                cleanup_children()
+                os._exit(1)
+
+    thread = threading.Thread(target=watchdog)
+    thread.daemon = True
+    thread.start()
+
+
+def register(shell, process, command, cleanup):
+    process._is_killed = False
     _CHILDREN.append((shell, process, cleanup))
+    _watchdog_thread(process, command)
 
 
 def unregister(process_arg):
@@ -28,6 +59,8 @@ def cleanup_children():
     _CLEANUP_LOCK.acquire()
     while len(_CHILDREN) > 0:
         shell, process, cleanup = _CHILDREN.pop()
+        # NOTE: do not error-out in watchdog thread
+        process._is_killed = True
         if process.is_running():
             if cleanup:
                 try:

@@ -174,6 +174,7 @@ class SshShell(object):
         use_pty = kwargs.pop("use_pty", False)
         encoding = kwargs.pop("encoding", None)
         cwd = kwargs.get('cwd')
+        cleanup = kwargs.pop("cleanup", None)
         command_in_cwd = self._shell_type.generate_run_command(command, *args, store_pid=store_pid, **kwargs)
         try:
             channel = self._get_ssh_transport().open_session()
@@ -217,7 +218,7 @@ class SshShell(object):
         )
         if store_pid:
             process.pid = pid
-        _child.register(process)
+        _child.register(self, process, cleanup)
         
         return process
     

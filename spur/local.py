@@ -49,6 +49,7 @@ class LocalShell(object):
         use_pty = kwargs.pop("use_pty", False)
         encoding = kwargs.pop("encoding", None)
         cwd = kwargs.get("cwd")
+        cleanup = kwargs.pop("cleanup", None)
         if use_pty:
             if pty is None:
                 raise ValueError("use_pty is not supported when the pty module cannot be imported")
@@ -109,7 +110,7 @@ class LocalShell(object):
         )
         if store_pid:
             spur_process.pid = process.pid
-        _child.register(spur_process)
+        _child.register(self, spur_process, cleanup)
         return spur_process
     
     def run(self, *args, **kwargs):

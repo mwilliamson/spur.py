@@ -180,6 +180,8 @@ Optional arguments:
   If set, the raw bytes are decoded before writing to
   the passed ``stdout`` and ``stderr`` arguments (if set)
   and before setting the output attributes on the result.
+* ``cleanup`` -- if set, execute this command (a list of strings) when
+  killing this process. Useful when processes are created with sudo.
 
 ``shell.run(*args, **kwargs)`` should behave similarly to
 ``shell.spawn(*args, **kwargs).wait_for_result()``

@@ -19,6 +19,7 @@ from .files import FileOperations
 from . import results
 from .io import IoHandler, Channel
 from .errors import NoSuchCommandError, CommandInitializationError, CouldNotChangeDirectoryError
+from . import _child
 
 
 _ONE_MINUTE = 60
@@ -216,6 +217,7 @@ class SshShell(object):
         )
         if store_pid:
             process.pid = pid
+        _child.register(process)
         
         return process
     
@@ -383,6 +385,7 @@ class SshProcess(object):
         if self._result is None:
             self._result = self._generate_result()
             
+        _child.unregister(self)
         return self._result
         
     def _generate_result(self):

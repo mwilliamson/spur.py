@@ -18,6 +18,7 @@ from .files import FileOperations
 from . import results
 from .io import IoHandler, Channel
 from .errors import NoSuchCommandError, CouldNotChangeDirectoryError
+from . import _child
 
 
 class LocalShell(object):
@@ -108,6 +109,7 @@ class LocalShell(object):
         )
         if store_pid:
             spur_process.pid = process.pid
+        _child.register(spur_process)
         return spur_process
     
     def run(self, *args, **kwargs):
@@ -181,6 +183,7 @@ class LocalProcess(object):
         if self._result is None:
             self._result = self._generate_result()
             
+        _child.unregister(self)
         return self._result
         
     def _generate_result(self):

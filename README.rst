@@ -184,6 +184,9 @@ Optional arguments:
 ``shell.run(*args, **kwargs)`` should behave similarly to
 ``shell.spawn(*args, **kwargs).wait_for_result()``
 
+All processes created by Spur will be killed when the program exits for any
+reason.
+
 spawn(command, cwd, update\_env, store\_pid, allow\_error, stdout, stderr, encoding)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

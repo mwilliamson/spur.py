@@ -5,7 +5,7 @@ test:
 	
 upload:
 	tox
-	python setup.py sdist bdist_wheel upload
+	_virtualenv/bin/python setup.py sdist bdist_wheel upload
 	make clean
 	
 register:

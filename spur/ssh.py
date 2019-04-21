@@ -46,32 +46,32 @@ class MissingHostKey(object):
 
 class MinimalShellType(object):
     supports_which = False
-    
+
     def generate_run_command(self, command_args, store_pid,
             cwd=None, update_env={}, new_process_group=False):
-        
+
         if store_pid:
             raise self._unsupported_argument_error("store_pid")
-        
+
         if cwd is not None:
             raise self._unsupported_argument_error("cwd")
-        
+
         if update_env:
             raise self._unsupported_argument_error("update_env")
-        
+
         if new_process_group:
             raise self._unsupported_argument_error("new_process_group")
-        
+
         return " ".join(map(escape_sh, command_args))
-        
-    
+
+
     def _unsupported_argument_error(self, name):
         return UnsupportedArgumentError("'{0}' is not supported when using a minimal shell".format(name))
 
 
 class ShShellType(object):
     supports_which = True
-    
+
     def generate_run_command(self, command_args, store_pid,
             cwd=None, update_env={}, new_process_group=False):
         commands = []
@@ -91,21 +91,21 @@ class ShShellType(object):
         which_commands = " || ".join(self._generate_which_commands(command_args[0]))
         which_commands = "{ { " + which_commands + "; } && echo 0; } || { echo $?; exit 1; }"
         commands.append(which_commands)
-        
+
         command = " ".join(map(escape_sh, command_args))
         command = "exec {0}".format(command)
         if new_process_group:
             command = "setsid {0}".format(command)
         commands.append(command)
         return "; ".join(commands)
-    
+
     def _generate_which_commands(self, command):
         which_commands = ["command -v {0}", "which {0}"]
         return (
             self._generate_which_command(which, command)
             for which in which_commands
         )
-    
+
     def _generate_which_command(self, which, command):
         return which.format(escape_sh(command)) + " > /dev/null 2>&1"
 
@@ -128,13 +128,13 @@ class SshShell(object):
             look_for_private_keys=True,
             load_system_host_keys=True,
             sock=None):
-        
+
         if port is None:
             port = 22
 
         if shell_type is None:
             shell_type = ShellTypes.sh
-        
+
         self._hostname = hostname
         self._port = port
         self._username = username
@@ -151,20 +151,23 @@ class SshShell(object):
             self._missing_host_key = MissingHostKey.raise_error
         else:
             self._missing_host_key = missing_host_key
-        
+
         self._shell_type = shell_type
 
     def __enter__(self):
         return self
-        
+
     def __exit__(self, *args):
+        self.close()
+
+    def close(self):
         self._closed = True
         if self._client is not None:
             self._client.close()
 
     def run(self, *args, **kwargs):
         return self.spawn(*args, **kwargs).wait_for_result()
-    
+
     def spawn(self, command, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
         stderr = kwargs.pop("stderr", None)
@@ -181,9 +184,9 @@ class SshShell(object):
         if use_pty:
             channel.get_pty()
         channel.exec_command(command_in_cwd)
-        
+
         process_stdout = channel.makefile('rb')
-        
+
         if store_pid:
             pid = _read_int_initialization_line(process_stdout)
 
@@ -201,10 +204,10 @@ class SshShell(object):
 
         if self._shell_type.supports_which:
             which_return_code = _read_int_initialization_line(process_stdout)
-            
+
             if which_return_code != 0:
                 raise NoSuchCommandError(command[0])
-        
+
         process = SshProcess(
             channel,
             allow_error=allow_error,
@@ -216,9 +219,9 @@ class SshShell(object):
         )
         if store_pid:
             process.pid = pid
-        
+
         return process
-    
+
     @contextlib.contextmanager
     def temporary_dir(self):
         result = self.run(["mktemp", "--directory"], encoding="ascii")
@@ -227,7 +230,7 @@ class SshShell(object):
             yield temp_dir
         finally:
             self.run(["rm", "-rf", temp_dir])
-    
+
     def upload_dir(self, local_dir, remote_dir, ignore):
         with create_temporary_dir() as temp_dir:
             content_tarball_path = os.path.join(temp_dir, "content.tar.gz")
@@ -245,28 +248,28 @@ class SshShell(object):
                     "tar", "xzf", remote_tarball_path,
                     "--strip-components", "1", "--directory", remote_dir
                 ])
-                    
+
                 sftp.remove(remote_tarball_path)
-                
+
     def open(self, name, mode="r"):
         sftp = self._open_sftp_client()
         sftp_file = SftpFile(sftp, sftp.open(name, mode), mode)
-        
+
         if "b" not in mode:
             sftp_file = io.TextIOWrapper(sftp_file)
-        
+
         return sftp_file
-    
+
     @property
     def files(self):
         return FileOperations(self)
-    
+
     def _get_ssh_transport(self):
         try:
             return self._connect_ssh().get_transport()
         except (socket.error, paramiko.SSHException, EOFError) as error:
             raise self._connection_error(error)
-    
+
     def _connect_ssh(self):
         if self._client is None:
             if self._closed:
@@ -287,7 +290,7 @@ class SshShell(object):
             )
             self._client = client
         return self._client
-    
+
     @contextlib.contextmanager
     def _connect_sftp(self):
         sftp = self._open_sftp_client()
@@ -295,10 +298,10 @@ class SshShell(object):
             yield sftp
         finally:
             sftp.close()
-            
+
     def _open_sftp_client(self):
         return self._get_ssh_transport().open_sftp_client()
-        
+
     def _connection_error(self, error):
         connection_error = ConnectionError(
             "Error creating SSH connection\n" +
@@ -324,32 +327,32 @@ class SftpFile(object):
         self._sftp = sftp
         self._file = file
         self._mode = mode
-    
+
     def __getattr__(self, key):
         return getattr(self._file, key)
-        
+
     def close(self):
         try:
             self._file.close()
         finally:
             self._sftp.close()
-    
+
     def readable(self):
         return "r" in self._mode or "+" in self._mode
-    
+
     def writable(self):
         return "w" in self._mode or "+" in self._mode or "a" in self._mode
-    
+
     def seekable(self):
         return True
-    
-    
+
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, *args):
         self.close()
-        
+
 
 def escape_sh(value):
     return "'" + value.replace("'", "'\\''") + "'"
@@ -364,31 +367,31 @@ class SshProcess(object):
         self._stderr = channel.makefile_stderr('rb')
         self._shell = shell
         self._result = None
-        
+
         self._io = IoHandler([
             Channel(self._stdout, stdout),
             Channel(self._stderr, stderr),
         ], encoding=encoding)
-        
+
     def is_running(self):
         return not self._channel.exit_status_ready()
-        
+
     def stdin_write(self, value):
         self._channel.sendall(value)
-        
+
     def send_signal(self, signal):
         self._shell.run(["kill", "-{0}".format(signal), str(self.pid)])
-        
+
     def wait_for_result(self):
         if self._result is None:
             self._result = self._generate_result()
-            
+
         return self._result
-        
+
     def _generate_result(self):
         output, stderr_output = self._io.wait()
         return_code = self._channel.recv_exit_status()
-        
+
         return results.result(
             return_code,
             self._allow_error,

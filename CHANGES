@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.21
+
+* Add close() method to shells, behaving the same as __exit__().
+
 ## 0.3.20
 
 * SshShell: passing None as the port argument will cause port 22 to be used.

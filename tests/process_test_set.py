@@ -22,7 +22,7 @@ def test(test_func):
     def run_test(self, *args, **kwargs):
         with self.create_shell() as shell:
             test_func(shell)
-    
+
     return run_test
 
 
@@ -31,12 +31,12 @@ class ProcessTestSet(object):
     def output_of_run_is_stored(shell):
         result = shell.run(["echo", "hello"])
         assert_equal(b"hello\n", result.output)
-        
+
     @test
     def output_is_not_truncated_when_not_ending_in_a_newline(shell):
         result = shell.run(["echo", "-n", "hello"])
         assert_equal(b"hello", result.output)
-        
+
     @test
     def trailing_newlines_are_not_stripped_from_run_output(shell):
         result = shell.run(["echo", "\n\n"])
@@ -46,12 +46,12 @@ class ProcessTestSet(object):
     def stderr_output_of_run_is_stored(shell):
         result = shell.run(["sh", "-c", "echo hello 1>&2"])
         assert_equal(b"hello\n", result.stderr_output)
-        
+
     @test
     def output_bytes_are_decoded_if_encoding_is_set(shell):
         result = shell.run(["bash", "-c", r'echo -e "\u2603"'], encoding="utf8")
         assert_equal(_u("☃\n"), result.output)
-        
+
     @test
     def cwd_of_run_can_be_set(shell):
         result = shell.run(["pwd"], cwd="/")
@@ -125,14 +125,14 @@ class ProcessTestSet(object):
         process = shell.spawn(["echo", "hello"])
         result = process.wait_for_result()
         assert_equal(b"hello\n", result.output)
-        
+
     @test
     def calling_wait_for_result_is_idempotent(shell):
         process = shell.spawn(["echo", "hello"])
         process.wait_for_result()
         result = process.wait_for_result()
         assert_equal(b"hello\n", result.output)
-        
+
     @test
     def wait_for_result_raises_error_if_return_code_is_not_zero(shell):
         process = shell.spawn(["false"])
@@ -151,7 +151,7 @@ class ProcessTestSet(object):
         assert_equal(True, process.is_running())
         process.stdin_write(b"\n")
         _wait_for_assertion(lambda: assert_equal(False, process.is_running()))
-        
+
     @test
     def can_write_stdout_to_file_object_while_process_is_executing(shell):
         output_file = io.BytesIO()
@@ -163,7 +163,7 @@ class ProcessTestSet(object):
         assert process.is_running()
         process.stdin_write(b"\n")
         assert_equal(b"hello\n", process.wait_for_result().output)
-        
+
     @test
     def can_write_stderr_to_file_object_while_process_is_executing(shell):
         output_file = io.BytesIO()
@@ -188,26 +188,26 @@ class ProcessTestSet(object):
         assert process.is_running()
         process.stdin_write(b"\n")
         assert_equal(_u("☃hello\n"), process.wait_for_result().output)
-            
+
     @test
     def can_get_process_id_of_process_if_store_pid_is_true(shell):
         process = shell.spawn(["sh", "-c", "echo $$"], store_pid=True)
         result = process.wait_for_result()
         assert_equal(int(result.output.strip()), process.pid)
-        
+
     @test
     def process_id_is_not_available_if_store_pid_is_not_set(shell):
         process = shell.spawn(["sh", "-c", "echo $$"])
         assert not hasattr(process, "pid")
-            
+
     @test
     def can_send_signal_to_process_if_store_pid_is_set(shell):
         process = shell.spawn(["cat"], store_pid=True)
         assert process.is_running()
         process.send_signal(signal.SIGTERM)
         _wait_for_assertion(lambda: assert_equal(False, process.is_running()))
-        
-        
+
+
     @test
     def spawning_non_existent_command_raises_specific_no_such_command_exception(shell):
         try:
@@ -232,8 +232,8 @@ class ProcessTestSet(object):
             )
             assert_equal(expected_message, error.args[0])
             assert_equal("i-am-not-a-command", error.command)
-        
-        
+
+
     @test
     def using_non_existent_cwd_does_not_raise_no_such_command_error(shell):
         cwd = "/some/path/that/hopefully/doesnt/exists/ljaslkfjaslkfjas"
@@ -249,26 +249,26 @@ class ProcessTestSet(object):
     def commands_are_run_without_pseudo_terminal_by_default(shell):
         result = shell.run(["bash", "-c", "[ -t 0 ]"], allow_error=True)
         assert_not_equal(0, result.return_code)
-        
+
 
     @test
     def command_can_be_explicitly_run_with_pseudo_terminal(shell):
         result = shell.run(["bash", "-c", "[ -t 0 ]"], allow_error=True, use_pty=True)
         assert_equal(0, result.return_code)
-        
+
 
     @test
     def output_is_captured_when_using_pty(shell):
         result = shell.run(["echo", "-n", "hello"], use_pty=True)
         assert_equal(b"hello", result.output)
-        
+
 
     @test
     def stderr_is_redirected_stdout_when_using_pty(shell):
         result = shell.run(["sh", "-c", "echo -n hello 1>&2"], use_pty=True)
         assert_equal(b"hello", result.output)
         assert_equal(b"", result.stderr_output)
-        
+
 
     @test
     def can_write_to_stdin_of_spawned_process_when_using_pty(shell):
@@ -329,6 +329,15 @@ class ProcessTestSet(object):
         # * https://bugs.python.org/issue20927
         result = shell.run(["./ls"], cwd="/bin")
         assert_equal(result.return_code, 0)
+
+    @istest
+    def shell_can_be_closed_using_close_method(self):
+        shell = self.create_shell()
+        try:
+            result = shell.run(["echo", "hello"])
+            assert_equal(b"hello\n", result.output)
+        finally:
+            shell.close()
 
 
 # TODO: timeouts in wait_for_result

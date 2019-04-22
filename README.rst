@@ -76,7 +76,7 @@ Optional arguments:
 * ``missing_host_key`` -- by default, an error is raised when a host
   key is missing. One of the following values can be used to change the
   behaviour when a host key is missing:
-   
+
   - ``spur.ssh.MissingHostKey.raise_error`` -- raise an error
   - ``spur.ssh.MissingHostKey.warn`` -- accept the host key and log a
     warning
@@ -88,14 +88,14 @@ Optional arguments:
   often found on embedded systems, try changing ``shell_type`` to a more
   appropriate value, such as ``spur.ssh.ShellTypes.minimal``. The following
   shell types are currently supported:
-  
+
   - ``spur.ssh.ShellTypes.sh`` -- the Bourne shell. Supports all features.
-  
+
   - ``spur.ssh.ShellTypes.minimal`` -- a minimal shell. Several features
     are unsupported:
-    
+
     - Non-existent commands will not raise ``spur.NoSuchCommandError``.
-    
+
     - The following arguments to ``spawn`` and ``run`` are unsupported unless
       set to their default values:
       ``cwd``, ``update_env``, and ``store_pid``.
@@ -103,7 +103,7 @@ Optional arguments:
 * ``look_for_private_keys`` -- by default, Spur will search for discoverable
   private key files in ``~/.ssh/``.
   Set to ``False`` to disable this behaviour.
-  
+
 * ``load_system_host_keys`` -- by default, Spur will attempt to read host keys
   from the user's known hosts file, as used by OpenSSH, and no exception will
   be raised if the file can't be read.
@@ -212,6 +212,12 @@ assuming you already have an instance of ``SshShell``:
     with ssh_shell.open("/path/to/remote", "rb") as remote_file:
         with open("/path/to/local", "wb") as local_file:
             shutil.copyfileobj(remote_file, local_file)
+
+close()
+~~~~~~~
+
+Closes and the shell and releases any associated resources.
+``close()`` is called automatically when the shell is used as a context manager.
 
 Process interface
 -----------------

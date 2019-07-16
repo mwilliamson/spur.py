@@ -100,6 +100,9 @@ Optional arguments:
       set to their default values:
       ``cwd``, ``update_env``, and ``store_pid``.
 
+  - ``spur.ssh.ShellTypes.windows`` -- the Windows cmd.exe shell. Supports all
+    documented features. Undocumented features may not work.
+
 * ``look_for_private_keys`` -- by default, Spur will search for discoverable
   private key files in ``~/.ssh/``.
   Set to ``False`` to disable this behaviour.
@@ -238,6 +241,9 @@ Has the following methods:
   ``RunProcessError`` if the return code is not zero and
   ``shell.spawn`` was not called with ``allow_error=True``.
 * ``send_signal(signal)`` -- sends the process the signal ``signal``.
+  Only available if ``store_pid`` was set to ``True`` when calling
+  ``spawn``. (Unavailable in Windows Shell)
+* ``kill`` -- kills the process.
   Only available if ``store_pid`` was set to ``True`` when calling
   ``spawn``.
 

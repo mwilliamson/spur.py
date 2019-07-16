@@ -43,6 +43,39 @@ class MissingHostKey(object):
     auto_add = paramiko.AutoAddPolicy()
     accept = AcceptParamikoPolicy()
 
+class WindowsShellType(object):
+    supports_which = True
+
+    def generate_run_command(self, command_args, store_pid,
+            cwd=None, update_env={}, new_process_group=False):
+
+        if new_process_group:
+            raise UnsupportedArgumentError("'new_process_group' is not supported when using a windows shell")
+
+        commands = []
+
+        if store_pid:
+            commands.append("powershell (Get-WmiObject Win32_Process -Filter ProcessId=$PID).ParentProcessId")
+
+        if cwd is not None:
+            commands.append("cd {0} 2>&1 || ( echo. & echo spur-cd: %errorlevel% & exit 1 )".format(win_escape_sh(cwd)))
+            commands.append("echo. & echo spur-cd: 0")
+
+        update_env_commands = [
+            "SET {0}={1}".format(key, value)
+            for key, value in _iteritems(update_env)
+        ]
+        commands += update_env_commands
+        commands.append(
+            "( (powershell Get-Command {0} > nul 2>&1) && echo 0) || (echo %errorlevel% & exit 1)".format(
+                win_escape_sh(command_args[0])))
+
+        commands.append(" ".join(command_args))
+        return " & ".join(commands)
+
+    def generate_kill_command(self, pid):
+        return "taskkill /F /PID {0}".format(pid)
+
 
 class MinimalShellType(object):
     supports_which = False
@@ -64,6 +97,8 @@ class MinimalShellType(object):
 
         return " ".join(map(escape_sh, command_args))
 
+    def generate_kill_command(self, pid):
+        return "kill {0}".format(pid)
 
     def _unsupported_argument_error(self, name):
         return UnsupportedArgumentError("'{0}' is not supported when using a minimal shell".format(name))
@@ -99,6 +134,9 @@ class ShShellType(object):
         commands.append(command)
         return "; ".join(commands)
 
+    def generate_kill_command(self, pid):
+        return "kill {0}".format(pid)
+
     def _generate_which_commands(self, command):
         which_commands = ["command -v {0}", "which {0}"]
         return (
@@ -113,6 +151,7 @@ class ShShellType(object):
 class ShellTypes(object):
     minimal = MinimalShellType()
     sh = ShShellType()
+    windows = WindowsShellType()
 
 
 class SshShell(object):
@@ -141,7 +180,7 @@ class SshShell(object):
         self._password = password
         self._private_key_file = private_key_file
         self._client = None
-        self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
+        self._connect_timeout = connect_timeout if connect_timeout is not None else _ONE_MINUTE
         self._look_for_private_keys = look_for_private_keys
         self._load_system_host_keys = load_system_host_keys
         self._closed = False
@@ -358,6 +397,10 @@ def escape_sh(value):
     return "'" + value.replace("'", "'\\''") + "'"
 
 
+def win_escape_sh(value):
+    return '"' + value + '"'
+
+
 class SshProcess(object):
     def __init__(self, channel, allow_error, process_stdout, stdout, stderr, encoding, shell):
         self._channel = channel
@@ -381,6 +424,9 @@ class SshProcess(object):
 
     def send_signal(self, signal):
         self._shell.run(["kill", "-{0}".format(signal), str(self.pid)])
+
+    def kill(self):
+        self._shell.run([self._shell._shell_type.generate_kill_command(self.pid)])
 
     def wait_for_result(self):
         if self._result is None:

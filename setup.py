@@ -17,6 +17,7 @@ setup(
     keywords="ssh shell subprocess process",
     packages=['spur'],
     install_requires=["paramiko>=1.13.1,<3"],
+    license="BSD-2-Clause",
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

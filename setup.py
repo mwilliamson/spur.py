@@ -13,7 +13,7 @@ setup(
     long_description=read("README.rst"),
     author='Michael Williamson',
     author_email='mike@zwobble.org',
-    url='http://github.com/mwilliamson/spur.py',
+    url='https://github.com/mwilliamson/spur.py',
     keywords="ssh shell subprocess process",
     packages=['spur'],
     install_requires=["paramiko>=1.13.1,<3"],

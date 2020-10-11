@@ -1,5 +1,9 @@
 # CHANGES
 
+## 0.3.22
+
+* Fix: default connect timeout was not being set correctly.
+
 ## 0.3.21
 
 * Add close() method to shells, behaving the same as __exit__().

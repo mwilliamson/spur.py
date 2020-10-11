@@ -129,6 +129,9 @@ class SshShell(object):
             load_system_host_keys=True,
             sock=None):
 
+        if connect_timeout is None:
+            connect_timeout = _ONE_MINUTE
+
         if port is None:
             port = 22
 
@@ -141,7 +144,7 @@ class SshShell(object):
         self._password = password
         self._private_key_file = private_key_file
         self._client = None
-        self._connect_timeout = connect_timeout if not None else _ONE_MINUTE
+        self._connect_timeout = connect_timeout
         self._look_for_private_keys = look_for_private_keys
         self._load_system_host_keys = load_system_host_keys
         self._closed = False

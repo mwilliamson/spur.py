@@ -36,7 +36,7 @@ LocalShell
 
 Takes no arguments:
 
-.. code-block:: sh
+.. code-block:: python
 
     spur.LocalShell()
 

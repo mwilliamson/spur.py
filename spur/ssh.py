@@ -14,11 +14,11 @@ import io
 
 import paramiko
 
-from spur.tempdir import create_temporary_dir
-from spur.files import FileOperations
-from spur import results
-from spur.io import IoHandler, Channel
-from spur.errors import NoSuchCommandError, CommandInitializationError, CouldNotChangeDirectoryError
+from .tempdir import create_temporary_dir
+from .files import FileOperations
+from . import results
+from .io import IoHandler, Channel
+from .errors import NoSuchCommandError, CommandInitializationError, CouldNotChangeDirectoryError
 
 
 _ONE_MINUTE = 60

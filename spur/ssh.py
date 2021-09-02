@@ -14,11 +14,11 @@ import io
 
 import paramiko
 
-from .tempdir import create_temporary_dir
-from .files import FileOperations
-from . import results
-from .io import IoHandler, Channel
-from .errors import NoSuchCommandError, CommandInitializationError, CouldNotChangeDirectoryError
+from spur.tempdir import create_temporary_dir
+from spur.files import FileOperations
+from spur import results
+from spur.io import IoHandler, Channel
+from spur.errors import NoSuchCommandError, CommandInitializationError, CouldNotChangeDirectoryError
 
 
 _ONE_MINUTE = 60
@@ -127,7 +127,9 @@ class SshShell(object):
             shell_type=None,
             look_for_private_keys=True,
             load_system_host_keys=True,
-            sock=None):
+            sock=None,
+            stdout=None,
+            stderr=None):
 
         if connect_timeout is None:
             connect_timeout = _ONE_MINUTE
@@ -149,6 +151,8 @@ class SshShell(object):
         self._load_system_host_keys = load_system_host_keys
         self._closed = False
         self._sock = sock
+        self._stdout = stdout
+        self._stderr = stderr
 
         if missing_host_key is None:
             self._missing_host_key = MissingHostKey.raise_error
@@ -173,7 +177,11 @@ class SshShell(object):
 
     def spawn(self, command, *args, **kwargs):
         stdout = kwargs.pop("stdout", None)
+        if stdout is None:
+            stdout = self._stdout
         stderr = kwargs.pop("stderr", None)
+        if stderr is None:
+            stderr = self._stderr
         allow_error = kwargs.pop("allow_error", False)
         store_pid = kwargs.pop("store_pid", False)
         use_pty = kwargs.pop("use_pty", False)

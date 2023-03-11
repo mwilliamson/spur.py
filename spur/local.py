@@ -71,6 +71,13 @@ class LocalShell(object):
                 bufsize=0,
                 **self._subprocess_args(command, *args, **kwargs)
             )
+        except FileNotFoundError as error:
+            if cwd is not None and error.filename == cwd:
+                raise CouldNotChangeDirectoryError(cwd, error)
+            elif error.filename == command[0]:
+                raise NoSuchCommandError(command[0])
+            else:
+                raise
         except OSError as error:
             if cwd is not None and self._is_cannot_change_directory_oserror(error, cwd):
                 raise CouldNotChangeDirectoryError(cwd, error)

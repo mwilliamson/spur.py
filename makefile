@@ -1,19 +1,28 @@
-.PHONY: test upload clean bootstrap
+.PHONY: test
 
 test:
 	sh -c '. _virtualenv/bin/activate; py.test tests'
 
-upload:
+.PHONY: upload
+
+upload: build-dist
 	tox
-	_virtualenv/bin/python setup.py sdist bdist_wheel upload
+	_virtualenv/bin/twine upload dist/*
 	make clean
 
-register:
-	python setup.py register
+.PHONY: build-dist
+
+build-dist:
+	rm -rf dist
+	_virtualenv/bin/pyproject-build
+
+.PHONY: clean
 
 clean:
 	rm -f MANIFEST
 	rm -rf dist build
+
+.PHONY: bootstrap
 
 bootstrap: _virtualenv
 	_virtualenv/bin/pip install -e .
@@ -27,3 +36,4 @@ _virtualenv:
 	_virtualenv/bin/pip install --upgrade pip
 	_virtualenv/bin/pip install --upgrade setuptools
 	_virtualenv/bin/pip install --upgrade wheel
+	_virtualenv/bin/pip install --upgrade build twine

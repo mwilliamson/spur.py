@@ -1,5 +1,11 @@
 # CHANGES
 
+## 0.3.23
+
+* Raise minimum Python version to 3.6.
+
+* Handle FileNotFoundError when using subprocess on Python >= 3.8.
+
 ## 0.3.22
 
 * Fix: default connect timeout was not being set correctly.

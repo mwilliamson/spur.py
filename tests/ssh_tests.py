@@ -4,7 +4,6 @@ import io
 import socket
 
 from nose.tools import istest, assert_raises, assert_equal
-from paramiko.util import retry_on_signal
 
 import spur
 import spur.ssh
@@ -75,20 +74,20 @@ def missing_host_key_set_to_warn_allows_connection_with_missing_host_key():
 def missing_host_key_set_to_raise_error_raises_error_when_missing_host_key():
     with create_ssh_shell(missing_host_key=spur.ssh.MissingHostKey.raise_error) as shell:
         assert_raises(spur.ssh.ConnectionError, lambda: shell.run(["true"]))
-        
+
 
 @istest
 def trying_to_use_ssh_shell_after_exit_results_in_error():
     with create_ssh_shell() as shell:
         pass
-        
+
     assert_raises(Exception, lambda: shell.run(["true"]))
 
 
 @istest
 def an_open_socket_can_be_used_for_ssh_connection_with_sock_argument():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    retry_on_signal(lambda: sock.connect((HOSTNAME, PORT)))
+    sock.connect((HOSTNAME, PORT))
 
     with _create_shell_with_wrong_port(sock=sock) as shell:
         result = shell.run(["echo", "hello"])

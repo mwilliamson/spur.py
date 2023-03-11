@@ -15,7 +15,7 @@ from .open_test_set import OpenTestSet
 class SshTestMixin(object):
     def create_shell(self):
         return create_ssh_shell()
-    
+
 
 @istest
 class SshOpenTests(OpenTestSet, SshTestMixin):
@@ -32,7 +32,7 @@ def attempting_to_connect_to_wrong_port_raises_connection_error():
     def try_connection():
         shell = _create_shell_with_wrong_port()
         shell.run(["echo", "hello"])
-        
+
     assert_raises(spur.ssh.ConnectionError, try_connection)
 
 
@@ -108,7 +108,7 @@ def _create_shell_with_wrong_port(**kwargs):
 class MinimalSshTestMixin(object):
     def create_shell(self):
         return create_ssh_shell(shell_type=spur.ssh.ShellTypes.minimal)
-    
+
 
 @istest
 class MinimalSshOpenTests(OpenTestSet, MinimalSshTestMixin):
@@ -119,7 +119,7 @@ class MinimalSshOpenTests(OpenTestSet, MinimalSshTestMixin):
 class MinimalSshProcessTests(ProcessTestSet, MinimalSshTestMixin):
     spawning_command_that_uses_path_env_variable_asks_if_command_is_installed = None
     spawning_non_existent_command_raises_specific_no_such_command_exception = None
-    
+
     can_get_process_id_of_process_if_store_pid_is_true = None
     can_send_signal_to_process_if_store_pid_is_set = None
 
@@ -129,42 +129,42 @@ class MinimalSshProcessTests(ProcessTestSet, MinimalSshTestMixin):
     using_non_existent_cwd_and_command_raises_could_not_change_directory_error = None
     using_non_existent_command_and_correct_cwd_raises_no_such_command_exception = None
     can_find_command_in_cwd = None
-    
+
     @istest
     def cannot_store_pid(self):
         self._assert_unsupported_feature(store_pid=True)
-    
+
     cwd_of_run_can_be_set = None
-    
+
     @istest
     def cannot_set_cwd(self):
         self._assert_unsupported_feature(cwd="/")
-    
+
     environment_variables_can_be_added_for_run = None
-    
+
     @istest
     def update_env_can_be_empty(self):
         self._assert_supported_feature(update_env={})
-        
+
     @istest
     def cannot_update_env(self):
         self._assert_unsupported_feature(update_env={"x": "one"})
-        
+
     @istest
     def cannot_set_new_process_group(self):
         self._assert_unsupported_feature(new_process_group=True)
-    
-    
+
+
     def _assert_supported_feature(self, **kwargs):
         with self.create_shell() as shell:
             result = shell.run(["echo", "hello"], **kwargs)
-        
+
         assert_equal(b"hello\n", result.output)
-    
-    
+
+
     def _assert_unsupported_feature(self, **kwargs):
         name, = kwargs.keys()
-        
+
         try:
             with self.create_shell() as shell:
                 shell.run(["echo", "hello"], **kwargs)
@@ -179,11 +179,11 @@ class ReadInitializationLineTests(object):
     @istest
     def reading_initialization_line_returns_int_from_line_of_file(self):
         assert_equal(42, spur.ssh._read_int_initialization_line(io.StringIO("42\n")))
-        
+
     @istest
     def blank_lines_are_skipped(self):
         assert_equal(42, spur.ssh._read_int_initialization_line(io.StringIO("\n \n\t\t\n42\n")))
-        
+
     @istest
     def error_if_non_blank_line_is_not_integer(self):
         try:

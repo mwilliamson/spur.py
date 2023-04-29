@@ -184,6 +184,7 @@ class SshShell(object):
             channel = self._get_ssh_transport().open_session()
         except EOFError as error:
             raise self._connection_error(error)
+        paramiko.agent.AgentRequestHandler(channel)
         if use_pty:
             channel.get_pty()
         channel.exec_command(command_in_cwd)

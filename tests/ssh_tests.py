@@ -83,6 +83,13 @@ def test_an_open_socket_can_be_used_for_ssh_connection_with_sock_argument():
         assert_equal(b"hello\n", result.output)
 
 
+@istest
+def ssh_agent_key_forwarding_successful():
+    with create_ssh_shell(missing_host_key=spur.ssh.MissingHostKey.accept) as shell:
+        auth_sock = shell.run(["printenv", "SSH_AUTH_SOCK"])
+        assert auth_sock is not None
+
+
 def _create_shell_with_wrong_port(**kwargs):
     return spur.SshShell(
         username=USERNAME,
